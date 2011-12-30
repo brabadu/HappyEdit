@@ -1,0 +1,39 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+body {
+    padding: 10px;
+    font-family: "Lucida Grande";
+    font-size: 11px;
+    font-variant: normal;
+}
+#files {
+    display: inline-block;
+    height: 400px;
+    width: 150px;
+    margin-right: 10px;
+}
+#files li {
+    list-style-type: none;
+    cursor: pointer;
+    padding: 2px;
+}
+#files li.selected {
+    color: white;
+    background: black;
+}
+#editor {
+    display: inline-block;
+    width: 700px;
+    height: 400px;
+}
+#statusbar {
+    text-align: right;
+    display: block;
+    width: 860px;
+    padding: 4px;
+}
+#statusbar button.save {
+    padding: 8px;
+}
