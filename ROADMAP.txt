@@ -1,14 +1,7 @@
-v0.1
-- Chrome extension
-x Ace integration
-x List files in folder where server starts
-x Save functionality
-
 v0.2
-- Settings panel
-- Ability to setup projects (url and file path)
-- Automatically open project depending on url
-- Ability to navigate sub folders
+- List files in sub folders
+- CommandT-like file opener
+- Search function that scans all files in project
 
 v0.3
 - Git diffing between HEAD
@@ -16,11 +9,4 @@ v0.3
 - Mark changed files in file view
 
 v0.4
-- Autosaving (remove save button)
-- Ability to delete files
-
-v0.5
 - VIM mode
-
-v0.6
-- CommandT-like file opener
