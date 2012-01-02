@@ -78,7 +78,7 @@ function fileClicked() {
 
     var xhr = new XMLHttpRequest();
     var filename = this.innerHTML;
-    var url = '/' + filename;
+    var url = '/project/' + filename;
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
