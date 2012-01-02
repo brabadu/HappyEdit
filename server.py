@@ -76,14 +76,15 @@ class FileListing():
 
 class SaveHandler():
 
-    def __init__(self, next_app):
+    def __init__(self, path, next_app):
+        self.path = path
         self.next_app = next_app
 
     def __call__(self, environ, start_response):
         if environ['PATH_INFO'] == '/save':
             length = int(environ['CONTENT_LENGTH'])
             params = dict(parse_qsl(environ['wsgi.input'].read(length)))
-            open(params['file'], 'w').write(params['lines'])
+            open(os.path.join(params['file']), 'w').write(params['lines'])
             msg = 'File saved'
             start_response("200 OK", [
                 ('Content-Type', 'application/json'),
@@ -117,7 +118,7 @@ class ProjectFilesServer(Directory):
 def main():
     codebox_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     cwd = os.getcwd()
-    app = CodeBoxFilesServer(codebox_path, FileListing(cwd, SaveHandler(ProjectFilesServer(cwd))))
+    app = CodeBoxFilesServer(codebox_path, FileListing(cwd, SaveHandler(cwd, ProjectFilesServer(cwd))))
     try:
         print "Serving " + os.getcwd() + " to http://localhost:8888"
         make_server('0.0.0.0', 8888, app).serve_forever()
