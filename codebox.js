@@ -38,11 +38,13 @@ function save(fileName, lines) {
     var url = '/save';
     var params = 'file=' + fileName + '&lines=' + encodeURIComponent(lines);
     xhr.open("POST", url);
+    document.querySelector('#notification').style.visibility = 'visible';
 
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
+            document.querySelector('#notification').style.visibility = 'hidden';
             console.log(xhr.responseText);
         }
     };
@@ -55,8 +57,16 @@ window.onload = function() {
     editorElement = document.getElementById('editor');
     getFiles();
 
-    document.querySelector('#statusbar button.save').addEventListener('click', function() {
-        save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
+    editor.commands.addCommand({
+        name: "save",
+        bindKey: {
+            win: "Ctrl-S",
+            mac: "Command-S",
+            sender: "editor"
+        },
+        exec: function() {
+            save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
+        }
     });
 };
 

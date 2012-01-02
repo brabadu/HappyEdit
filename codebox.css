@@ -6,6 +6,7 @@ body {
     font-family: "Lucida Grande";
     font-size: 11px;
     font-variant: normal;
+    overflow: hidden;
 }
 #files {
     position: absolute;
@@ -26,17 +27,17 @@ body {
     width: 100%;
     height: 100%;
 }
-#statusbar {
-    position: absolute;
-    bottom: 0;
-    background: white;
-    border-top: 1px solid #666;
-    z-index: 10;
-    width: 100%;
-    padding: 4px;
-    text-align: right;
-}
-#statusbar button.save {
-    padding: 2px;
-    margin-right: 10px;
+#notification {
+    text-align: center;
+    position: fixed;
+    visibility: hidden;
+    width: 200px;
+    top: 0;
+    left: 50%;
+    margin-left: -100px;
+    background: rgb(163, 26, 20);
+    color: white;
+    border-radius: 5px;
+    border-color: solid rgb(163, 26, 20);
+    border: 1px;
 }
