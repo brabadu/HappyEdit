@@ -1,5 +1,6 @@
 var editor;
 var editorElement;
+var trie = {};
 
 var Mode = function(name, desc, clazz, extensions) {
     this.name = name;
@@ -68,6 +69,28 @@ window.onload = function() {
             save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
         }
     });
+
+    document.querySelector('#files input').addEventListener('keyup', function(event) {
+        var i = 0;
+        var suggestions = getAutoSuggestions(this.value);
+
+        document.querySelector('#files .suggestions').innerHTML = '';
+
+        if (this.value.length) {
+            var fragment = document.createDocumentFragment();
+            suggestions.forEach(function(file, i) {
+                var li = createFileListView(file);
+                fragment.appendChild(li);
+                makeAutoSuggestable(file);
+            });
+            document.querySelector('#files .nav').style.display = 'none';
+            document.querySelector('#files .suggestions').appendChild(fragment);
+            document.querySelector('#files .suggestions').style.display = 'block';
+        } else {
+            document.querySelector('#files .nav').style.display = 'block';
+            document.querySelector('#files .suggestions').style.display = 'none';
+        }
+    });
 };
 
 function fileClicked() {
@@ -100,6 +123,70 @@ function fileClicked() {
     this.setAttribute('class', 'selected');
 }
 
+function makeAutoSuggestable(filename) {
+    var i = 0;
+    var key = '';
+    var hash = trie;
+
+    for (i = 0; i < filename.length; i += 1) {
+        key += filename[i];
+        if (!hash.hasOwnProperty(key)) {
+            hash[key] = {};
+        }
+        hash = hash[key];
+    }
+}
+
+function getNumberOfKeys(hash) {
+    var i = 0;
+    var key = '';
+
+    for (key in hash) {
+        if (hash.hasOwnProperty(key)) {
+            i += 1;
+        }
+    }
+
+    return i;
+}
+
+function getKeys(hash) {
+    var ret = [];
+    var key = '';
+
+    for (key in hash) {
+        if (hash.hasOwnProperty(key)) {
+            ret = ret.concat(getKeys(hash[key]));
+            if (getNumberOfKeys(hash[key]) === 0) {
+                ret.push(key);
+            }
+        }
+    }
+
+    return ret;
+}
+
+function getAutoSuggestions(inputText) {
+    var i;
+    var key = '';
+    var hash = trie;
+
+    for (i = 0; i < inputText.length; i += 1) {
+        key += inputText[i];
+        hash = hash[key];
+        if (i === inputText.length - 1) {
+            return getKeys(hash);
+        }
+    }
+}
+
+function createFileListView(file) {
+    var li = document.createElement('li');
+    li.innerHTML = file;
+    li.onclick = fileClicked;
+    return li;
+}
+
 function getFiles() {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", '/files');
@@ -109,12 +196,11 @@ function getFiles() {
             var json = JSON.parse(xhr.responseText);
             var fragment = document.createDocumentFragment();
             json.forEach(function(file, i) {
-                var li = document.createElement('li');
-                li.innerHTML = file;
-                li.onclick = fileClicked;
+                var li = createFileListView(file);
                 fragment.appendChild(li);
+                makeAutoSuggestable(file);
             });
-            document.getElementById('files').appendChild(fragment);
+            document.querySelector('#files ul').appendChild(fragment);
         }
     };
 
