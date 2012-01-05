@@ -66,7 +66,14 @@ class FileListing():
 
     def __call__(self, environ, start_response):
         if environ['PATH_INFO'] == '/files':
-            response = json.dumps(os.listdir(os.getcwd()))
+            response = []
+            for dirpath, dirnames, filenames in os.walk(self.path, topdown=True):
+                for dirname in dirnames:
+                    if dirname.startswith('.'):
+                        dirnames.remove(dirname)
+                for filename in filenames:
+                    response.append(os.path.relpath(os.path.join(dirpath, filename)))
+            response = json.dumps(response)
             start_response("200 OK", [
                 ('Content-Type', 'application/json'),
                 ('Content-Length', str(len(response))),

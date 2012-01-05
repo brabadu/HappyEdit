@@ -1,5 +1,5 @@
 v0.2
-- List files in sub folders
+x List files in sub folders
 - CommandT-like file opener
 - Search function that scans all files in project
 
