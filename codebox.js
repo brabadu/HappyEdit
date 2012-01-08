@@ -185,6 +185,7 @@ function getAutoSuggestions(inputText) {
 function createFileListView(file) {
     var li = document.createElement('li');
     li.innerHTML = file;
+    li.setAttribute('title', file);
     li.onclick = fileClicked;
     return li;
 }

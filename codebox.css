@@ -9,11 +9,13 @@ body {
     overflow: hidden;
 }
 #files {
+    overflow: scroll;
     position: absolute;
     width: 150px;
     height: 100%;
 }
 #files li {
+    white-space: nowrap;
     list-style-type: none;
     cursor: pointer;
     padding: 2px;
