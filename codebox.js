@@ -81,7 +81,6 @@ window.onload = function() {
             suggestions.forEach(function(file, i) {
                 var li = createFileListView(file);
                 fragment.appendChild(li);
-                makeAutoSuggestable(file);
             });
             document.querySelector('#files .nav').style.display = 'none';
             document.querySelector('#files .suggestions').appendChild(fragment);
@@ -124,30 +123,32 @@ function fileClicked() {
 }
 
 function makeAutoSuggestable(filename) {
-    var i = 0;
-    var key = '';
-    var hash = trie;
+    var parts;
 
-    for (i = 0; i < filename.length; i += 1) {
-        key += filename[i];
-        if (!hash.hasOwnProperty(key)) {
-            hash[key] = {};
+    function add(filename, fullFileName, isLastPart) {
+        var i = 0;
+        var key = '';
+        var hash = trie;
+
+        for (i = 0; i < filename.length; i += 1) {
+            key += filename[i];
+            if (!hash.hasOwnProperty(key)) {
+                hash[key] = {};
+            }
+            hash = hash[key];
+
+            if (i === filename.length - 1 && isLastPart) {
+                hash['fullFileName'] = fullFileName;
+            }
         }
-        hash = hash[key];
-    }
-}
 
-function getNumberOfKeys(hash) {
-    var i = 0;
-    var key = '';
-
-    for (key in hash) {
-        if (hash.hasOwnProperty(key)) {
-            i += 1;
-        }
     }
 
-    return i;
+    add(filename, filename, true);
+    parts = filename.split('/');
+    parts.forEach(function(part, i) {
+        add(part, filename, i === (parts.length - 1));
+    });
 }
 
 function getKeys(hash) {
@@ -156,9 +157,10 @@ function getKeys(hash) {
 
     for (key in hash) {
         if (hash.hasOwnProperty(key)) {
-            ret = ret.concat(getKeys(hash[key]));
-            if (getNumberOfKeys(hash[key]) === 0) {
-                ret.push(key);
+            if (typeof(hash[key]) === 'string') {
+                ret.push(hash[key]);
+            } else {
+                ret = ret.concat(getKeys(hash[key]));
             }
         }
     }
