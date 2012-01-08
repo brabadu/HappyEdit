@@ -66,13 +66,17 @@ class FileListing():
 
     def __call__(self, environ, start_response):
         if environ['PATH_INFO'] == '/files':
+            ignored_extensions = environ['QUERY_STRING'].split('ignored_extensions=')
+            ignored_extensions = ignored_extensions[1].split(',')
             response = []
             for dirpath, dirnames, filenames in os.walk(self.path, topdown=True):
                 for dirname in dirnames:
                     if dirname.startswith('.'):
                         dirnames.remove(dirname)
                 for filename in filenames:
-                    response.append(os.path.relpath(os.path.join(dirpath, filename)))
+                    ext = os.path.splitext(filename)[1]
+                    if not ext in ignored_extensions:
+                        response.append(os.path.relpath(os.path.join(dirpath, filename)))
             response = json.dumps(response)
             start_response("200 OK", [
                 ('Content-Type', 'application/json'),

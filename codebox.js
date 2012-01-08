@@ -189,7 +189,12 @@ function createFileListView(file) {
 
 function getFiles() {
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", '/files');
+
+    // Configure ignored extensions with:
+    // localStorage.ignored_extensions = JSON.stringify(['.pyc', '.png']);
+    var ignoredExtensions = JSON.parse(localStorage.ignored_extensions || '[]');
+
+    xhr.open("GET", '/files?ignored_extensions=' + ignoredExtensions.join(','));
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
