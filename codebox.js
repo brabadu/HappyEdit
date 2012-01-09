@@ -264,8 +264,7 @@ function grep(q) {
             var json = JSON.parse(xhr.responseText);
             var fragment = document.createDocumentFragment();
             json.forEach(function(file, i) {
-                var parts = file.split(':');
-                var li = createFileListView(parts[0]);
+                var li = createFileListView(file.filename);
                 fragment.appendChild(li);
                 console.log(file);
             });

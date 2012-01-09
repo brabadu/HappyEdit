@@ -6,6 +6,7 @@ import mimetypes
 import json
 import subprocess
 from urlparse import parse_qsl
+from urllib import unquote
 from wsgiref.simple_server import make_server
 
 class File:
@@ -59,6 +60,21 @@ class Directory(dict):
     def __repr__(self):
         return self.path
 
+project_files = []
+
+def get_project_files(project_path, ignored_extensions):
+    global project_files
+    project_files = []
+    for dirpath, dirnames, filenames in os.walk(project_path, topdown=True):
+        for dirname in dirnames:
+            if dirname.startswith('.'):
+                dirnames.remove(dirname)
+        for filename in filenames:
+            ext = os.path.splitext(filename)[1]
+            if not ext in ignored_extensions:
+                project_files.append(os.path.relpath(os.path.join(dirpath, filename)))
+    return project_files
+
 class FileListing():
 
     def __init__(self, path, next_app):
@@ -67,18 +83,9 @@ class FileListing():
 
     def __call__(self, environ, start_response):
         if environ['PATH_INFO'] == '/files':
-            ignored_extensions = environ['QUERY_STRING'].split('ignored_extensions=')
-            ignored_extensions = ignored_extensions[1].split(',')
-            response = []
-            for dirpath, dirnames, filenames in os.walk(self.path, topdown=True):
-                for dirname in dirnames:
-                    if dirname.startswith('.'):
-                        dirnames.remove(dirname)
-                for filename in filenames:
-                    ext = os.path.splitext(filename)[1]
-                    if not ext in ignored_extensions:
-                        response.append(os.path.relpath(os.path.join(dirpath, filename)))
-            response = json.dumps(response)
+            params = dict(parse_qsl(environ['QUERY_STRING']))
+            ignored_extensions = params['ignored_extensions'].split(',')
+            response = json.dumps(get_project_files(self.path, ignored_extensions))
             start_response("200 OK", [
                 ('Content-Type', 'application/json'),
                 ('Content-Length', str(len(response))),
@@ -126,16 +133,31 @@ class GrepHandler():
         self.next_app = next_app
 
     def __call__(self, environ, start_response):
+        global project_files
         if environ['PATH_INFO'] == '/grep':
-            q = environ['QUERY_STRING'].split('q=')[1]
+            #files = [os.path.abspath(i) for i in project_files]
+            #files = ' '.join(files)
+
+            params = dict(parse_qsl(environ['QUERY_STRING']))
+            q = unquote(params['q'])
+
             files = subprocess.check_output(['grep', '-inr', q, '.'])
-            files = files.split('\n')
-            msg = json.dumps(files)
+
+            ret = []
+            for line in files.split('\n'):
+                parts = line.split(':')
+                if len(parts) > 1:
+                    ret.append({
+                        'filename': parts[0].split('./')[1],
+                        'lineno': parts[1],
+                    })
+            ret = json.dumps(ret)
+
             start_response("200 OK", [
                 ('Content-Type', 'application/json'),
-                ('Content-Length', str(len(msg))),
+                ('Content-Length', str(len(ret))),
             ])
-            return [msg]
+            return [ret]
         return self.next_app(environ, start_response)
 
 class ProjectFilesServer(Directory):
