@@ -1,12 +1,9 @@
-v0.2
-x List files in sub folders
-x CommandT-like file opener
-- Search function that scans all files in project
-
 v0.3
+- Manage multiple buffers/documents open at the same time
+- Settings panel
+- VIM mode
+
+v0.4
 - Git diffing between HEAD
 - Ability to go back in time for current file
 - Mark changed files in file view
-
-v0.4
-- VIM mode
