@@ -1,3 +1,6 @@
+ul.files {
+    list-style-type: none;
+}
 * {
     margin: 0;
     padding: 0;
@@ -8,21 +11,23 @@ body {
     font-variant: normal;
     overflow: hidden;
 }
-#files {
+.files {
     overflow: scroll;
-    position: absolute;
-    width: 150px;
-    height: 100%;
 }
-#files li {
+.files li {
     white-space: nowrap;
     list-style-type: none;
     cursor: pointer;
     padding: 2px;
 }
-#files li.selected {
+.files li.selected {
     color: white;
     background: black;
+}
+#files {
+    position: absolute;
+    width: 150px;
+    height: 100%;
 }
 #editor {
     margin: 0 0 0 150px;
@@ -42,4 +47,42 @@ body {
     border-radius: 5px;
     border-color: solid rgb(163, 26, 20);
     border: 1px;
+}
+#blocker {
+    z-index: 99;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: black;
+    opacity: 0.4;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+.popup {
+    z-index: 100;
+    display: none;
+    position: absolute;
+    width: 480px;
+    height: auto;
+    padding: 10px;
+    top: 100px;
+    left: 50%;
+    margin-left: -250px;
+    border: 5px solid #ccc;
+    background: white;
+}
+.popup .close {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    cursor: pointer;
+    background: #333;
+    color: white;
+    padding: 5px;
+}
+#grep-popup .files {
+    max-height: 200px;
 }

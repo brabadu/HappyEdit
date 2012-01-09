@@ -70,6 +70,43 @@ window.onload = function() {
         }
     });
 
+    function togglePopup() {
+        var $popup = document.querySelector('#grep-popup');
+        var $blocker = document.querySelector('#blocker');
+
+        if ($popup.style.display === 'none') {
+            $popup.style.display = 'block';
+            $blocker.style.display = 'block';
+        } else {
+            $popup.style.display = 'none';
+            $blocker.style.display = 'none';
+        }
+    }
+
+    document.querySelector('#grep-popup .close').addEventListener('click', function(event) {
+        togglePopup();
+    });
+
+    document.querySelector('#grep-popup input[type=submit]').addEventListener('click', function(event) {
+        grep(document.querySelector('#grep-popup input[type=search]').value);
+    });
+
+    document.querySelector('#blocker').addEventListener('click', function(event) {
+        togglePopup();
+    });
+
+    editor.commands.addCommand({
+        name: "grep",
+        bindKey: {
+            win: "Ctrl-G",
+            mac: "Command-G",
+            sender: "editor"
+        },
+        exec: function() {
+            togglePopup();
+        }
+    });
+
     document.querySelector('#files input').addEventListener('keyup', function(event) {
         var i = 0;
         var suggestions = getAutoSuggestions(this.value);
@@ -84,7 +121,7 @@ window.onload = function() {
             });
             document.querySelector('#files .nav').style.display = 'none';
             document.querySelector('#files .suggestions').appendChild(fragment);
-            document.querySelector('#files .suggestions').style.display = 'block';
+            dotcument.querySelector('#files .suggestions').style.display = 'block';
         } else {
             document.querySelector('#files .nav').style.display = 'block';
             document.querySelector('#files .suggestions').style.display = 'none';
@@ -93,7 +130,7 @@ window.onload = function() {
 };
 
 function fileClicked() {
-    var previouslySelectedFile = document.querySelector('#files .selected');
+    var previouslySelectedFile = document.querySelector('.files .selected');
     if (previouslySelectedFile) {
         previouslySelectedFile.setAttribute('class', '');
     }
@@ -215,3 +252,26 @@ function getFiles() {
     xhr.send();
 }
 
+function grep(q) {
+    var xhr = new XMLHttpRequest();
+    var $ul = document.querySelector('#grep-popup ul');
+    $ul.innerHTML = '';
+
+    xhr.open("GET", '/grep?q=' + encodeURIComponent(q));
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            var json = JSON.parse(xhr.responseText);
+            var fragment = document.createDocumentFragment();
+            json.forEach(function(file, i) {
+                var parts = file.split(':');
+                var li = createFileListView(parts[0]);
+                fragment.appendChild(li);
+                console.log(file);
+            });
+            $ul.appendChild(fragment);
+        }
+    };
+
+    xhr.send();
+}

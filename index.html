@@ -13,8 +13,17 @@
         <script src="/codebox.js" type="text/javascript" charset="utf-8"></script>
     </head>
     <body>
+        <div id="blocker">
+        </div>
+        <div id="grep-popup" class="popup">
+            <span class="close">X</span>
+            <input type="search" />
+            <input type="submit" value="Find in all files" />
+            <ul class="files">
+            </ul>
+        </div>
         <span id="notification">Saving</span>
-        <div id="files">
+        <div id="files" class="files">
             <input type="search" />
             <ul class="nav"></ul>
             <ul class="suggestions"></ul>
