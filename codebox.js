@@ -121,7 +121,7 @@ window.onload = function() {
             });
             document.querySelector('#files .nav').style.display = 'none';
             document.querySelector('#files .suggestions').appendChild(fragment);
-            dotcument.querySelector('#files .suggestions').style.display = 'block';
+            document.querySelector('#files .suggestions').style.display = 'block';
         } else {
             document.querySelector('#files .nav').style.display = 'block';
             document.querySelector('#files .suggestions').style.display = 'none';
