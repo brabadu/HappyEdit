@@ -1,4 +1,5 @@
 var editor;
+var session;
 var editorElement;
 var trie = {};
 
@@ -27,7 +28,7 @@ var modes = [
 ];
 
 function getLinesInCurrentBuffer() {
-    return editor.getSelection().doc.$lines.join('\n');
+    return session.getValue();
 }
 
 function getCurrentlySelectedFileName() {
@@ -55,6 +56,7 @@ function save(fileName, lines) {
 
 window.onload = function() {
     editor = ace.edit("editor");
+    session = editor.getSession();
     editorElement = document.getElementById('editor');
     getFiles();
 
