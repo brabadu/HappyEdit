@@ -11,20 +11,33 @@ body {
     font-variant: normal;
     overflow: hidden;
 }
-.files {
+.tabs li {
+    display: inline-block;
+    cursor: pointer;
+}
+.tabs li.selected {
+    font-weight: bold;
+}
+.panes .pane {
+    display: none;
+}
+.panes .pane.selected {
+    display: block;
+}
+.filelist {
     overflow: scroll;
 }
-.files li {
+.filelist li {
     white-space: nowrap;
     list-style-type: none;
     cursor: pointer;
     padding: 2px;
 }
-.files li.selected {
+.filelist li.selected {
     color: white;
     background: black;
 }
-#files {
+#sidebar {
     position: absolute;
     width: 150px;
     height: 100%;
@@ -83,6 +96,6 @@ body {
     color: white;
     padding: 5px;
 }
-#grep-popup .files {
+#grep-popup .filelist {
     max-height: 200px;
 }
