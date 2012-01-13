@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+  "name": "CodeBox",
+  "version": "0.1",
+  "description": "CodeBox is a Code editor for web developers",
+  "content_scripts": [
+    {
+      "run_at": "document_end",
+      "matches": ["http://localhost/*/*"],
+      "js": ["inject.js"]
+    }
+  ],
+  "icons": {
+    "48": "icon_48.png",
+    "128": "icon_128.png"
+  }
+}
