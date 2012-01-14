@@ -11,12 +11,23 @@ body {
     font-variant: normal;
     overflow: hidden;
 }
+.tabs {
+    border-bottom: 1px solid black;
+    margin: 4px 0;
+}
 .tabs li {
     display: inline-block;
     cursor: pointer;
+    position: relative;
+    top: 1px;
+    background: transparent;
+    padding: 4px;
 }
 .tabs li.selected {
-    font-weight: bold;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    background: white;
 }
 .panes .pane {
     display: none;

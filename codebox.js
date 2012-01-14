@@ -89,9 +89,9 @@ window.onload = function() {
 
     function onTabClick(tabElem) {
         var paneClass = tabElem.getAttribute('rel');
-        var oldTab = document.querySelector('#sidebar .tabs .selected');
-        var oldPane = document.querySelector('#sidebar .panes .selected');
-        var newPane = document.querySelector('#sidebar .panes .' + paneClass);
+        var oldTab = document.querySelector('#sidebar .tab.selected');
+        var oldPane = document.querySelector('#sidebar .pane.selected');
+        var newPane = document.querySelector('#sidebar .pane.' + paneClass);
 
         removeClass(oldTab, 'selected');
         removeClass(oldPane, 'selected');
@@ -289,7 +289,7 @@ function grep() {
     var $ul = document.querySelector('#sidebar .grep .filelist');
     $ul.innerHTML = '';
 
-    if (q.length === 0) {
+    if (!q) {
         return;
     }
 
