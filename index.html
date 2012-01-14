@@ -16,12 +16,13 @@
     <body>
         <div id="blocker">
         </div>
-        <div id="grep-popup" class="popup">
+        <div class="popup settings">
             <span class="close">X</span>
-            <input type="search" />
-            <input type="submit" value="Find in all files" />
-            <ul class="filelist">
-            </ul>
+            <h2>Settings</h2>
+
+            <label>Ignore these extensions (separate with ',')</label>
+            <input type="text" class="ignored_extensions" placeholder=".pyc,.scss" />
+            <input type="submit" class="send" value="Save" />
         </div>
         <span id="notification">Saving</span>
 
@@ -29,6 +30,7 @@
             <h1></h1>
             <select class="branch">
             </select>
+            <span class="settings" title="Settings"></span>
             <div style="clear:both"></div>
         </div>
 

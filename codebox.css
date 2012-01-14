@@ -107,8 +107,9 @@ body {
     color: white;
     padding: 5px;
 }
-#grep-popup .filelist {
-    max-height: 200px;
+.popup label {
+    display: block;
+    margin: 10px 0;
 }
 #top {
     padding: 5px;
@@ -120,5 +121,13 @@ body {
     float: left;
 }
 #top select.branch {
+    float: left;
+    margin-left: 10px;
+}
+#top .settings {
+    cursor: pointer;
+    background: url(/cog.png);
+    width: 16px;
+    height: 16px;
     float: right;
 }

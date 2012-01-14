@@ -84,7 +84,7 @@ class FileListing():
     def __call__(self, environ, start_response):
         if environ['PATH_INFO'] == '/files':
             params = dict(parse_qsl(environ['QUERY_STRING']))
-            ignored_extensions = params['ignored_extensions'].split(',')
+            ignored_extensions = params.get('ignored_extensions', '').split(',')
             response = json.dumps(get_project_files(self.path, ignored_extensions))
             start_response("200 OK", [
                 ('Content-Type', 'application/json'),

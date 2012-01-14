@@ -76,19 +76,6 @@ window.onload = function() {
         }
     });
 
-    function togglePopup() {
-        var $popup = document.querySelector('#grep-popup');
-        var $blocker = document.querySelector('#blocker');
-
-        if ($popup.style.display === 'none') {
-            $popup.style.display = 'block';
-            $blocker.style.display = 'block';
-        } else {
-            $popup.style.display = 'none';
-            $blocker.style.display = 'none';
-        }
-    }
-
     function onTabClick(tabElem) {
         var paneClass = tabElem.getAttribute('rel');
         var oldTab = document.querySelector('#sidebar .tab.selected');
@@ -110,12 +97,11 @@ window.onload = function() {
     }
     onTabClick(tabs[0]);
 
-    document.querySelector('#grep-popup .close').addEventListener('click', function(event) {
+    document.querySelector('.popup .close').addEventListener('click', function(event) {
         togglePopup();
     });
 
-    document.querySelector('#grep-popup input[type=submit]').addEventListener('click', function(event) {
-        grep(document.querySelector('#grep-popup input[type=search]').value);
+    document.querySelector('.popup.settings input[type=submit]').addEventListener('click', function(event) {
     });
 
     document.querySelector('#blocker').addEventListener('click', function(event) {
@@ -166,6 +152,31 @@ window.onload = function() {
 
     document.querySelector('#top select.branch').addEventListener('change', function(event) {
         changeBranch(this.value);
+    });
+
+    document.querySelector('#top .settings').addEventListener('click', function(event) {
+        if (localStorage.ignored_extensions) {
+            document.querySelector('.popup.settings input.ignored_extensions').value = JSON.parse(localStorage.ignored_extensions).join(',');
+        }
+        togglePopup();
+    });
+    document.querySelector('.popup.settings input[type=submit]').addEventListener('click', function(event) {
+        try {
+            var value = document.querySelector('.popup.settings input.ignored_extensions').value;
+            var ignoredExtensions = [];
+            value.split(',').forEach(function(ext, i) {
+                if (ext.length) {
+                    if (ext[0] !== '.') {
+                        ext = '.' + ext;
+                    }
+                    ignoredExtensions.push(ext)
+                }
+            });
+            localStorage.ignored_extensions = JSON.stringify(ignoredExtensions);
+            togglePopup();
+        } catch (e) {
+            alert(e);
+        }
     });
 };
 
@@ -275,12 +286,17 @@ function createBranchSelectOption(branch) {
 
 function getFiles() {
     var xhr = new XMLHttpRequest();
+    var url = '/files';
 
     // Configure ignored extensions with:
     // localStorage.ignored_extensions = JSON.stringify(['.pyc', '.png']);
-    var ignoredExtensions = JSON.parse(localStorage.ignored_extensions || '[]');
 
-    xhr.open("GET", '/files?ignored_extensions=' + ignoredExtensions.join(','));
+    var ignoredExtensions = JSON.parse(localStorage.ignored_extensions || '[]');
+    if (ignoredExtensions) {
+        url = '/files?ignored_extensions=' + ignoredExtensions.join(',');
+    }
+
+    xhr.open("GET", url);
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -381,3 +397,17 @@ function changeBranch(branch) {
 
     xhr.send(params);
 }
+
+function togglePopup() {
+    var $popup = document.querySelector('.popup.settings');
+    var $blocker = document.querySelector('#blocker');
+
+    if ($popup.style.display === 'none') {
+        $popup.style.display = 'block';
+        $blocker.style.display = 'block';
+    } else {
+        $popup.style.display = 'none';
+        $blocker.style.display = 'none';
+    }
+}
+
