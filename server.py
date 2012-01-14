@@ -168,16 +168,47 @@ class ProjectFilesServer(Directory):
         environ['PATH_INFO'] = environ['PATH_INFO'][8:]
         return Directory.__call__(self, environ, start_response)
 
-class ProjectInfoHandler(Directory):
+class BranchChangeHandler():
 
     def __init__(self, path, next_app):
         self.path = path
         self.next_app = next_app
 
     def __call__(self, environ, start_response):
+        if environ['PATH_INFO'].startswith('/branch'):
+            length = int(environ['CONTENT_LENGTH'])
+            params = dict(parse_qsl(environ['wsgi.input'].read(length)))
+            ret = "changing branch to %s" % params['branch']
+            subprocess.check_output(['git', 'checkout', params['branch']])
+            start_response("200 OK", [
+                ('Content-Type', 'application/json'),
+                ('Content-Length', str(len(ret))),
+            ])
+            return [ret]
+        return self.next_app(environ, start_response)
+
+class ProjectInfoHandler():
+
+    def __init__(self, path, next_app):
+        self.path = path
+        self.next_app = next_app
+
+    def get_branches(self):
+        s = subprocess.check_output(['git', 'branch'])
+        ret = []
+        for line in s.split('\n'):
+            if line:
+                ret.append({
+                    'title': line.split('* ')[-1].strip(),
+                    'selected': line.startswith('*'),
+                })
+        return ret
+
+    def __call__(self, environ, start_response):
         if environ['PATH_INFO'].startswith('/info'):
             ret = {
                 'path': self.path,
+                'branches': self.get_branches(),
             }
             ret = json.dumps(ret)
 
@@ -191,7 +222,7 @@ class ProjectInfoHandler(Directory):
 def main():
     codebox_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     cwd = os.getcwd()
-    app = CodeBoxFilesServer(codebox_path, GrepHandler(cwd, ProjectInfoHandler(cwd, FileListing(cwd, SaveHandler(cwd, ProjectFilesServer(cwd))))))
+    app = CodeBoxFilesServer(codebox_path, GrepHandler(cwd, BranchChangeHandler(cwd, ProjectInfoHandler(cwd, FileListing(cwd, SaveHandler(cwd, ProjectFilesServer(cwd)))))))
     try:
         print "Serving " + os.getcwd() + " to http://localhost:8888"
         make_server('0.0.0.0', 8888, app).serve_forever()

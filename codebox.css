@@ -119,3 +119,6 @@ body {
     font-size: 14px;
     float: left;
 }
+#top select.branch {
+    float: right;
+}

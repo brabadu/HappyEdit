@@ -163,6 +163,10 @@ window.onload = function() {
             grep();
         }
     });
+
+    document.querySelector('#top select.branch').addEventListener('change', function(event) {
+        changeBranch(this.value);
+    });
 };
 
 function fileClicked() {
@@ -260,6 +264,15 @@ function createFileListView(file) {
     return li;
 }
 
+function createBranchSelectOption(branch) {
+    var option = document.createElement('option');
+    option.innerHTML = branch.title;
+    if (branch.selected) {
+        option.setAttribute('selected', 'selected');
+    }
+    return option;
+}
+
 function getFiles() {
     var xhr = new XMLHttpRequest();
 
@@ -340,9 +353,31 @@ function loadTopMenu() {
                 return;
             }
 
+            var fragment = document.createDocumentFragment();
+            json.branches.forEach(function(branch, i) {
+                var option = createBranchSelectOption(branch);
+                fragment.appendChild(option);
+            });
+            document.querySelector('#top select.branch').appendChild(fragment);
+
             document.querySelector('#top h1').innerHTML = json.path;
         }
     };
 
     xhr.send();
+}
+
+function changeBranch(branch) {
+    var xhr = new XMLHttpRequest();
+    var params = 'branch=' + branch;
+    xhr.open("POST", '/branch');
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            console.log(xhr.responseText);
+            location.reload();
+        }
+    };
+
+    xhr.send(params);
 }
