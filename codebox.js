@@ -184,8 +184,10 @@ function fileClicked() {
     removeClass(document.querySelector('.filelist .selected'), 'selected');
 
     var xhr = new XMLHttpRequest();
-    var filename = this.innerHTML;
+    var filename = this.querySelector('.title').innerHTML;
+    var lineNumberSpan = this.querySelector('.lineno');
     var url = '/project/' + filename;
+
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -200,6 +202,12 @@ function fileClicked() {
                 }
             }
             editor.getSession().setMode(mode.mode);
+
+            if (lineNumberSpan) {
+                var lineno = lineNumberSpan.innerHTML;
+                editor.gotoLine(lineno);
+                editor.scrollToLine(lineno);
+            }
         }
     };
     xhr.send();
@@ -267,11 +275,24 @@ function getAutoSuggestions(inputText) {
     }
 }
 
-function createFileListView(file) {
+function createFileListView(file, lineno) {
     var li = document.createElement('li');
-    li.innerHTML = file;
+    var titleSpan = document.createElement('span');
+
+    titleSpan.setAttribute('class', 'title');
+    titleSpan.innerHTML = file;
+    li.appendChild(titleSpan);
+
+    if (lineno) {
+        var lineNumberSpan = document.createElement('span');
+        lineNumberSpan.setAttribute('class', 'lineno');
+        lineNumberSpan.innerHTML = lineno;
+        li.appendChild(lineNumberSpan);
+    }
+
     li.setAttribute('title', file);
     li.onclick = fileClicked;
+
     return li;
 }
 
@@ -334,13 +355,13 @@ function grep() {
             try {
                 var json = JSON.parse(xhr.responseText);
             } catch (e) {
-                console.log('Couldn not parse grep response');
+                console.log('Could not parse grep response');
                 return;
             }
 
             var fragment = document.createDocumentFragment();
             json.forEach(function(file, i) {
-                var li = createFileListView(file.filename);
+                var li = createFileListView(file.filename, file.lineno);
                 fragment.appendChild(li);
             });
             $ul.appendChild(fragment);

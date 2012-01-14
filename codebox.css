@@ -31,12 +31,10 @@ body {
 }
 .panes .pane {
     display: none;
+    overflow: scroll;
 }
 .panes .pane.selected {
     display: block;
-}
-.filelist {
-    overflow: scroll;
 }
 .filelist li {
     white-space: nowrap;
@@ -48,10 +46,16 @@ body {
     color: white;
     background: black;
 }
+.filelist li .lineno {
+    color: #888;
+    margin-left: 5px; 
+    font-weight: bold;
+}
 #sidebar {
     position: absolute;
     width: 150px;
     height: 100%;
+    overflow: hidden;
 }
 #editor {
     margin: 0 0 0 150px;
