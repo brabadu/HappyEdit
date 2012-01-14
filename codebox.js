@@ -60,7 +60,9 @@ window.onload = function() {
     editor = ace.edit("editor");
     session = editor.getSession();
     editorElement = document.getElementById('editor');
+
     getFiles();
+    loadTopMenu();
 
     editor.commands.addCommand({
         name: "save",
@@ -318,6 +320,27 @@ function grep() {
             if (pendingGrep !== null) {
                 grep();
             }
+        }
+    };
+
+    xhr.send();
+}
+
+function loadTopMenu() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", '/info');
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            var json;
+            try {
+                json = JSON.parse(xhr.responseText);
+            } catch (e) {
+                console.log('Couldn not parse info response');
+                return;
+            }
+
+            document.querySelector('#top h1').innerHTML = json.path;
         }
     };
 

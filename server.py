@@ -168,10 +168,30 @@ class ProjectFilesServer(Directory):
         environ['PATH_INFO'] = environ['PATH_INFO'][8:]
         return Directory.__call__(self, environ, start_response)
 
+class ProjectInfoHandler(Directory):
+
+    def __init__(self, path, next_app):
+        self.path = path
+        self.next_app = next_app
+
+    def __call__(self, environ, start_response):
+        if environ['PATH_INFO'].startswith('/info'):
+            ret = {
+                'path': self.path,
+            }
+            ret = json.dumps(ret)
+
+            start_response("200 OK", [
+                ('Content-Type', 'application/json'),
+                ('Content-Length', str(len(ret))),
+            ])
+            return [ret]
+        return self.next_app(environ, start_response)
+
 def main():
     codebox_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     cwd = os.getcwd()
-    app = CodeBoxFilesServer(codebox_path, GrepHandler(cwd, FileListing(cwd, SaveHandler(cwd, ProjectFilesServer(cwd)))))
+    app = CodeBoxFilesServer(codebox_path, GrepHandler(cwd, ProjectInfoHandler(cwd, FileListing(cwd, SaveHandler(cwd, ProjectFilesServer(cwd))))))
     try:
         print "Serving " + os.getcwd() + " to http://localhost:8888"
         make_server('0.0.0.0', 8888, app).serve_forever()

@@ -110,3 +110,12 @@ body {
 #grep-popup .filelist {
     max-height: 200px;
 }
+#top {
+    padding: 5px;
+    background: black;
+    color: white;
+}
+#top h1 {
+    font-size: 14px;
+    float: left;
+}
