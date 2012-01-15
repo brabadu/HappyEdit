@@ -1,9 +1,5 @@
-v0.3
-x Manage multiple buffers/documents open at the same time
-x Ability to list and change git branch
-x Settings panel
-
 v0.4
+- Save editor state between sessions
 - Sidebar key bindings
 - Git status/diff intergration
 - VIM mode
