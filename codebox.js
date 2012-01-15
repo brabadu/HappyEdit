@@ -2,7 +2,6 @@ var EditSession = require('ace/edit_session').EditSession;
 var UndoManager = require('ace/undomanager').UndoManager;
 var sessions = {};
 var editor;
-var session;
 var editorElement;
 var trie = {};
 var pendingGrep = null;
@@ -33,11 +32,11 @@ var modes = [
 ];
 
 function getLinesInCurrentBuffer() {
-    return session.getValue();
+    return editor.getSession().getValue();
 }
 
 function getCurrentlySelectedFileName() {
-    return document.querySelector('#sidebar .files .selected').innerHTML;
+    return document.querySelector('#sidebar .files .selected .title').innerHTML;
 }
 
 function save(fileName, lines) {
