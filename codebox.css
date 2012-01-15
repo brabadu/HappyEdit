@@ -42,6 +42,21 @@ body {
     color: white;
     background: rgb(110, 177, 227);
 }
+.filelist li.modified {
+    padding-right: 10px;
+    position: relative;
+}
+.filelist li.modified:after {
+    content: "";
+    display: block;
+    width: 8px;
+    height: 8px;
+    background: rgba(128, 128, 128, 0.5);
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    border-radius: 4px;
+}
 .filelist li .lineno {
     color: #888;
     margin-left: 5px; 

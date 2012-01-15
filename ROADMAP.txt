@@ -1,10 +1,13 @@
 v0.3
-- Manage multiple buffers/documents open at the same time
+x Manage multiple buffers/documents open at the same time
 x Ability to list and change git branch
 x Settings panel
-- VIM mode
 
 v0.4
-- Git diffing between HEAD
+- Sidebar key bindings
+- Git status/diff intergration
+- VIM mode
+
+v0.5
 - Ability to go back in time for current file
 - Mark changed files in file view

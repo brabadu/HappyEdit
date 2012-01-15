@@ -52,6 +52,8 @@ function save(fileName, lines) {
         if (xhr.readyState == 4) {
             document.querySelector('#notification').style.visibility = 'hidden';
             console.log(xhr.responseText);
+            editor.getSession().getUndoManager().reset();
+            removeClass(document.querySelector('#sidebar .files .selected'), 'modified');
         }
     };
 
@@ -203,9 +205,10 @@ function createSessionForFile(filename, body) {
 function fileClicked() {
     removeClass(document.querySelector('.filelist .selected'), 'selected');
 
+    var elem = this;
     var xhr = new XMLHttpRequest();
-    var filename = this.querySelector('.title').innerHTML;
-    var lineNumberSpan = this.querySelector('.lineno');
+    var filename = elem.querySelector('.title').innerHTML;
+    var lineNumberSpan = elem.querySelector('.lineno');
     var url = '/project/' + filename;
 
     xhr.open("GET", url);
@@ -218,6 +221,13 @@ function fileClicked() {
                 session = createSessionForFile(filename, xhr.responseText);
                 sessions[filename] = session;
             }
+
+            session.getDocument().on('change', function(event) {
+                addClass(elem, 'modified');
+                if (session.getUndoManager().$undoStack.length === 0) {
+                    removeClass(elem, 'modified');
+                }
+            });
 
             if (lineNumberSpan) {
                 var lineno = lineNumberSpan.innerHTML;
