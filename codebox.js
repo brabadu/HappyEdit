@@ -1,3 +1,6 @@
+var EditSession = require('ace/edit_session').EditSession;
+var UndoManager = require('ace/undomanager').UndoManager;
+var sessions = {};
 var editor;
 var session;
 var editorElement;
@@ -180,6 +183,24 @@ window.onload = function() {
     });
 };
 
+function getModeForFile(filename) {
+    var mode = modes[0];
+    for (var i = 0; i < modes.length; i++) {
+        if (modes[i].supportsFile(filename)) {
+            mode = modes[i];
+            break;
+        }
+    }
+    return mode.mode;
+}
+
+function createSessionForFile(filename, body) {
+    var session = new EditSession(body);
+    session.setMode(getModeForFile(filename));
+    session.setUndoManager(new UndoManager());
+    return session;
+}
+
 function fileClicked() {
     removeClass(document.querySelector('.filelist .selected'), 'selected');
 
@@ -191,23 +212,20 @@ function fileClicked() {
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
-            editor.getSelection().selectAll();
-            editor.onTextInput(xhr.responseText);
-
-            var mode = modes[0];
-            for (var i = 0; i < modes.length; i++) {
-                if (modes[i].supportsFile(filename)) {
-                    mode = modes[i];
-                    break;
-                }
+            var session;
+            if (sessions.hasOwnProperty(filename)) {
+                session = sessions[filename];
+            } else {
+                session = createSessionForFile(filename, xhr.responseText);
+                sessions[filename] = session;
             }
-            editor.getSession().setMode(mode.mode);
 
             if (lineNumberSpan) {
                 var lineno = lineNumberSpan.innerHTML;
                 editor.gotoLine(lineno);
                 editor.scrollToLine(lineno);
             }
+            editor.setSession(session);
         }
     };
     xhr.send();
