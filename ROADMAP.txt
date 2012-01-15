@@ -1,6 +1,7 @@
 v0.3
 - Manage multiple buffers/documents open at the same time
-- Settings panel
+x Ability to list and change git branch
+x Settings panel
 - VIM mode
 
 v0.4
