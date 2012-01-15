@@ -12,7 +12,6 @@ body {
     overflow: hidden;
 }
 .tabs {
-    margin-bottom: 4px;
 }
 .tabs li {
     display: inline-block;
@@ -27,7 +26,6 @@ body {
 }
 .panes .pane {
     display: none;
-    overflow: scroll;
 }
 .panes .pane.selected {
     display: block;
@@ -64,16 +62,18 @@ body {
 }
 #sidebar {
     background: rgb(217, 222, 229);
-    position: absolute;
     width: 149px;
-    height: 100%;
     overflow: hidden;
     border-right: 1px solid rgb(180, 180, 180);
+    overflow-y: scroll;
+}
+#sidebar input[type=search] {
+    width: 100%;
 }
 #editor {
-    margin: 0 0 0 150px;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    top: 28px;
+    left: 150px;
 }
 #notification {
     text-align: center;

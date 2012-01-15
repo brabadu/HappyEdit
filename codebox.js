@@ -3,6 +3,7 @@ var UndoManager = require('ace/undomanager').UndoManager;
 var sessions = {};
 var editor;
 var editorElement;
+var sidebarElement;
 var trie = {};
 var pendingGrep = null;
 var grepIsRunning = false;
@@ -60,10 +61,28 @@ function save(fileName, lines) {
     xhr.send(params);
 }
 
+function updateSize() {
+    var w = window.innerWidth - 150;
+    var h = window.innerHeight - document.querySelector('#top').offsetHeight;
+
+    editorElement.style.width = w + 'px';
+    editorElement.style.height = h + 'px';
+
+    sidebarElement.style.height = h + 'px';
+}
+
 window.onload = function() {
     editor = ace.edit("editor");
     session = editor.getSession();
     editorElement = document.getElementById('editor');
+    sidebarElement = document.getElementById('sidebar');
+    //editor.renderer.onResize(true);
+
+    updateSize();
+
+    window.onresize = function(event) {
+        updateSize();
+    }
 
     getFiles();
     loadTopMenu();
