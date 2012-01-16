@@ -84,7 +84,7 @@ window.onload = function() {
         updateSize();
     }
 
-    getFiles();
+    loadFiles();
     loadTopMenu();
 
     editor.commands.addCommand({
@@ -221,10 +221,13 @@ function createSessionForFile(filename, body) {
     return session;
 }
 
-function fileClicked() {
+function onFileClicked(event) {
+    fileClicked(this);
+}
+
+function fileClicked(elem) {
     removeClass(document.querySelector('.filelist .selected'), 'selected');
 
-    var elem = this;
     var xhr = new XMLHttpRequest();
     var filename = elem.querySelector('.title').innerHTML;
     var lineNumberSpan = elem.querySelector('.lineno');
@@ -255,10 +258,12 @@ function fileClicked() {
             }
             editor.setSession(session);
         }
+
+        localStorage.filename = filename;
     };
     xhr.send();
 
-    addClass(this, 'selected');
+    addClass(elem, 'selected');
 }
 
 function makeAutoSuggestable(filename) {
@@ -337,7 +342,7 @@ function createFileListView(file, lineno) {
     }
 
     li.setAttribute('title', file);
-    li.onclick = fileClicked;
+    li.onclick = onFileClicked;
 
     return li;
 }
@@ -351,7 +356,7 @@ function createBranchSelectOption(branch) {
     return option;
 }
 
-function getFiles() {
+function loadFiles() {
     var xhr = new XMLHttpRequest();
     var url = '/files';
 
@@ -369,12 +374,19 @@ function getFiles() {
         if (xhr.readyState == 4) {
             var json = JSON.parse(xhr.responseText);
             var fragment = document.createDocumentFragment();
-            json.forEach(function(file, i) {
-                var li = createFileListView(file);
+            var openedFileElem;
+            json.forEach(function(filename, i) {
+                var li = createFileListView(filename);
+                if (filename === localStorage.filename) {
+                    openedFileElem = li;
+                }
                 fragment.appendChild(li);
-                makeAutoSuggestable(file);
+                makeAutoSuggestable(filename);
             });
             document.querySelector('#sidebar .pane.files .nav').appendChild(fragment);
+            if (openedFileElem) {
+                fileClicked(openedFileElem);
+            }
         }
     };
 
