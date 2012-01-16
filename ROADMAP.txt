@@ -1,9 +1,7 @@
 v0.4
-- Save editor state between sessions
+x Save editor state between sessions
+- Git status/diff/commit integration
 - Sidebar key bindings
-- Git status/diff intergration
-- VIM mode
 
 v0.5
-- Ability to go back in time for current file
-- Mark changed files in file view
+- VIM mode
