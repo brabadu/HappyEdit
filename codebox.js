@@ -42,8 +42,8 @@ function getCurrentlySelectedFileName() {
 
 function save(fileName, lines) {
     var xhr = new XMLHttpRequest();
-    var url = '/save';
-    var params = 'file=' + fileName + '&lines=' + encodeURIComponent(lines);
+    var url = '/files/' + encodeURIComponent(fileName);
+    var params = 'body=' + encodeURIComponent(lines);
     xhr.open("POST", url);
     document.querySelector('#notification').style.visibility = 'visible';
 
@@ -231,7 +231,7 @@ function fileClicked(elem) {
     var xhr = new XMLHttpRequest();
     var filename = elem.querySelector('.title').innerHTML;
     var lineNumberSpan = elem.querySelector('.lineno');
-    var url = '/project/' + filename;
+    var url = '/files/' + filename;
 
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {

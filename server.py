@@ -60,10 +60,7 @@ class Directory(dict):
     def __repr__(self):
         return self.path
 
-project_files = []
-
 def get_project_files(project_path, ignored_extensions):
-    global project_files
     project_files = []
     for dirpath, dirnames, filenames in os.walk(project_path, topdown=True):
         for dirname in dirnames:
@@ -77,12 +74,12 @@ def get_project_files(project_path, ignored_extensions):
 
 class FileListing():
 
-    def __init__(self, path, next_app):
+    def __init__(self, path):
         self.path = path
-        self.next_app = next_app
+        self.next_handler = None
 
     def __call__(self, environ, start_response):
-        if environ['PATH_INFO'] == '/files':
+        if environ['PATH_INFO'] in ['/files', '/files/']:
             params = dict(parse_qsl(environ['QUERY_STRING']))
             ignored_extensions = params.get('ignored_extensions', '').split(',')
             response = json.dumps(get_project_files(self.path, ignored_extensions))
@@ -91,31 +88,32 @@ class FileListing():
                 ('Content-Length', str(len(response))),
             ])
             return [response]
-        return self.next_app(environ, start_response)
+        return self.next_handler(environ, start_response)
 
 class SaveHandler():
 
-    def __init__(self, path, next_app):
+    def __init__(self, path):
         self.path = path
-        self.next_app = next_app
+        self.next_handler = None
 
     def __call__(self, environ, start_response):
-        if environ['PATH_INFO'] == '/save':
+        if environ['REQUEST_METHOD'] == 'POST' and environ['PATH_INFO'].startswith('/files'):
+            filename = os.path.join(environ['PATH_INFO'][7:])
             length = int(environ['CONTENT_LENGTH'])
             params = dict(parse_qsl(environ['wsgi.input'].read(length)))
-            open(os.path.join(params['file']), 'w').write(params['lines'])
+            open(filename, 'w').write(params['body'])
             msg = 'File saved'
             start_response("200 OK", [
                 ('Content-Type', 'application/json'),
                 ('Content-Length', str(len(msg))),
             ])
             return [msg]
-        return self.next_app(environ, start_response)
+        return self.next_handler(environ, start_response)
 
 class CodeBoxFilesServer(Directory):
 
-    def __init__(self, path, next_app):
-        self.next_app = next_app
+    def __init__(self, path):
+        self.next_handler = None
         Directory.__init__(self, path)
 
     def __call__(self, environ, start_response):
@@ -124,20 +122,16 @@ class CodeBoxFilesServer(Directory):
         return Directory.__call__(self, environ, start_response)
 
     def notfound(self, part, environ, start_response):
-        return self.next_app(environ, start_response)
+        return self.next_handler(environ, start_response)
 
 class GrepHandler():
 
-    def __init__(self, path, next_app):
+    def __init__(self, path):
         self.path = path
-        self.next_app = next_app
+        self.next_handler = None
 
     def __call__(self, environ, start_response):
-        global project_files
         if environ['PATH_INFO'] == '/grep':
-            #files = [os.path.abspath(i) for i in project_files]
-            #files = ' '.join(files)
-
             params = dict(parse_qsl(environ['QUERY_STRING']))
             q = unquote(params['q'])
 
@@ -158,21 +152,21 @@ class GrepHandler():
                 ('Content-Length', str(len(ret))),
             ])
             return [ret]
-        return self.next_app(environ, start_response)
+        return self.next_handler(environ, start_response)
 
 class ProjectFilesServer(Directory):
 
     def __call__(self, environ, start_response):
-        if not environ['PATH_INFO'].startswith('/project/'):
-            raise Exception("ProjectFilesServer reached but PATH_INFO does not start with '/project/'")
-        environ['PATH_INFO'] = environ['PATH_INFO'][8:]
-        return Directory.__call__(self, environ, start_response)
+        if environ['REQUEST_METHOD'] == 'GET' and environ['PATH_INFO'].startswith('/files/'):
+            environ['PATH_INFO'] = environ['PATH_INFO'][7:]
+            return Directory.__call__(self, environ, start_response)
+        return self.next_handler(environ, start_response)
 
 class BranchChangeHandler():
 
-    def __init__(self, path, next_app):
+    def __init__(self, path):
         self.path = path
-        self.next_app = next_app
+        self.next_handler = None
 
     def __call__(self, environ, start_response):
         if environ['PATH_INFO'].startswith('/branch'):
@@ -185,13 +179,13 @@ class BranchChangeHandler():
                 ('Content-Length', str(len(ret))),
             ])
             return [ret]
-        return self.next_app(environ, start_response)
+        return self.next_handler(environ, start_response)
 
 class ProjectInfoHandler():
 
-    def __init__(self, path, next_app):
+    def __init__(self, path):
         self.path = path
-        self.next_app = next_app
+        self.next_handler = None
 
     def get_branches(self):
         s = subprocess.check_output(['git', 'branch'])
@@ -217,15 +211,41 @@ class ProjectInfoHandler():
                 ('Content-Length', str(len(ret))),
             ])
             return [ret]
-        return self.next_app(environ, start_response)
+        return self.next_handler(environ, start_response)
+
+class NotFoundHandler:
+
+    def __call__(self, environ, start_response):
+        msg = "404 Not Found"
+        start_response("200 OK", [
+            ('Content-Type', 'text/plain'),
+            ('Content-Length', str(len(msg))),
+        ])
+        return [msg]
 
 def main():
     codebox_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     cwd = os.getcwd()
-    app = CodeBoxFilesServer(codebox_path, GrepHandler(cwd, BranchChangeHandler(cwd, ProjectInfoHandler(cwd, FileListing(cwd, SaveHandler(cwd, ProjectFilesServer(cwd)))))))
+
+    handlers = []
+    handlers.append(CodeBoxFilesServer(codebox_path))
+    handlers.append(GrepHandler(cwd))
+    handlers.append(BranchChangeHandler(cwd))
+    handlers.append(ProjectInfoHandler(cwd))
+    handlers.append(FileListing(cwd))
+    handlers.append(SaveHandler(cwd))
+    handlers.append(ProjectFilesServer(cwd))
+    handlers.append(NotFoundHandler())
+
+    i = 0
+    for handler in handlers:
+        i += 1
+        if i < len(handlers):
+            handler.next_handler = handlers[i]
+
     try:
-        print "Serving " + os.getcwd() + " to http://localhost:8888"
-        make_server('0.0.0.0', 8888, app).serve_forever()
+        print "Serving " + cwd + " to http://localhost:8888"
+        make_server('0.0.0.0', 8888, handlers[0]).serve_forever()
     except KeyboardInterrupt, ki:
         print ""
         print "Bye bye"
