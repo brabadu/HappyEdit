@@ -234,6 +234,15 @@ class GitHandler:
                 ('Content-Length', str(len(ret))),
             ])
             return [ret]
+        elif environ['PATH_INFO'].startswith('/git/diff'):
+            filename = environ['PATH_INFO'].split('/git/diff/')[1]
+            filename = os.path.join(filename)
+            ret = git.diff(filename)
+            start_response("200 OK", [
+                ('Content-Type', 'text/plain'),
+                ('Content-Length', str(len(ret))),
+            ])
+            return [ret]
         return self.next_handler(environ, start_response)
 
 def main():

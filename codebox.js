@@ -232,6 +232,10 @@ function onFileClicked(event) {
     fileClicked(this);
 }
 
+function onGitFileClicked(event) {
+    gitFileClicked(this);
+}
+
 function fileClicked(elem) {
     removeClass(document.querySelector('.filelist .selected'), 'selected');
 
@@ -271,6 +275,20 @@ function fileClicked(elem) {
     xhr.send();
 
     addClass(elem, 'selected');
+}
+
+function gitFileClicked(elem) {
+    removeClass(document.querySelector('.filelist .selected'), 'selected');
+    addClass(elem, 'selected');
+
+    var filename = elem.querySelector('.title').innerHTML;
+    var lineNumberSpan = elem.querySelector('.lineno');
+    var url = '/git/diff/' + filename;
+
+    ajax.get(url, function(response) {
+        var session = new EditSession(response);
+        editor.setSession(session);
+    });
 }
 
 function makeAutoSuggestable(filename) {
@@ -333,7 +351,7 @@ function getAutoSuggestions(inputText) {
     }
 }
 
-function createFileListView(file, lineno) {
+function createFileListView(file, lineno, clickCallback) {
     var li = document.createElement('li');
     var titleSpan = document.createElement('span');
 
@@ -349,7 +367,7 @@ function createFileListView(file, lineno) {
     }
 
     li.setAttribute('title', file);
-    li.onclick = onFileClicked;
+    li.onclick = clickCallback || onFileClicked;
 
     return li;
 }
@@ -476,7 +494,7 @@ function loadGitStatus() {
         var json = JSON.parse(response);
         var fragment = document.createDocumentFragment();
         json.modified.forEach(function(filename, i) {
-            var li = createFileListView(filename);
+            var li = createFileListView(filename, null, onGitFileClicked);
             fragment.appendChild(li);
         });
         $ul.appendChild(fragment);

@@ -13,8 +13,12 @@ def status():
         'modified': modified_files
     }
 
+def diff(filename):
+    return subprocess.check_output(['git', 'diff', filename])
+
 def main():
-    print status()
+    #print status()
+    print diff('git_wrapper.py')
 
 if __name__ == '__main__':
     main()
