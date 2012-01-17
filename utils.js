@@ -35,3 +35,32 @@ function removeClass(elem, className) {
 
     elem.setAttribute('class', newClassNames.join(' '));
 }
+
+var ajax = {
+    get: function(url, callback) {
+        var xhr = new XMLHttpRequest();
+        var params = params || '';
+        xhr.open("GET", url);
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4) {
+                callback(xhr.responseText);
+            }
+        };
+
+        xhr.send();
+    },
+    post: function(url, params, callback) {
+        var xhr = new XMLHttpRequest();
+        var params = params || '';
+        xhr.open("POST", url);
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4) {
+                callback(xhr.responseText);
+            }
+        };
+
+        xhr.send(params);
+    }
+}

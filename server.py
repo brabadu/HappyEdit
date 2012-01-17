@@ -5,6 +5,7 @@ import os
 import mimetypes
 import json
 import subprocess
+import git_wrapper as git
 from urlparse import parse_qsl
 from urllib import unquote
 from wsgiref.simple_server import make_server
@@ -223,6 +224,18 @@ class NotFoundHandler:
         ])
         return [msg]
 
+class GitHandler:
+
+    def __call__(self, environ, start_response):
+        if environ['PATH_INFO'].startswith('/git/status'):
+            ret = json.dumps(git.status())
+            start_response("200 OK", [
+                ('Content-Type', 'application/json'),
+                ('Content-Length', str(len(ret))),
+            ])
+            return [ret]
+        return self.next_handler(environ, start_response)
+
 def main():
     codebox_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     cwd = os.getcwd()
@@ -230,6 +243,7 @@ def main():
     handlers = []
     handlers.append(CodeBoxFilesServer(codebox_path))
     handlers.append(GrepHandler(cwd))
+    handlers.append(GitHandler())
     handlers.append(BranchChangeHandler(cwd))
     handlers.append(ProjectInfoHandler(cwd))
     handlers.append(FileListing(cwd))

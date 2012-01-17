@@ -7,6 +7,9 @@ var sidebarElement;
 var trie = {};
 var pendingGrep = null;
 var grepIsRunning = false;
+var tabCallbacks = {
+    'git': loadGitStatus
+};
 
 var Mode = function(name, desc, clazz, extensions) {
     this.name = name;
@@ -110,6 +113,10 @@ window.onload = function() {
 
         addClass(tabElem, 'selected');
         addClass(newPane, 'selected');
+
+        if (tabCallbacks.hasOwnProperty(paneClass)) {
+            tabCallbacks[paneClass]();
+        }
     }
 
     var tabs = document.querySelectorAll('#sidebar .tabs li');
@@ -460,6 +467,20 @@ function loadTopMenu() {
     };
 
     xhr.send();
+}
+
+function loadGitStatus() {
+    var $ul = document.querySelector('.pane.git ul');
+    $ul.innerHTML = '';
+    ajax.get('/git/status', function(response) {
+        var json = JSON.parse(response);
+        var fragment = document.createDocumentFragment();
+        json.modified.forEach(function(filename, i) {
+            var li = createFileListView(filename);
+            fragment.appendChild(li);
+        });
+        $ul.appendChild(fragment);
+    });
 }
 
 function changeBranch(branch) {
