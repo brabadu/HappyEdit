@@ -16,6 +16,9 @@ def status():
 def diff(filename):
     return subprocess.check_output(['git', 'diff', filename])
 
+def checkout(branch):
+    return subprocess.check_output(['git', 'checkout', branch])
+
 def main():
     #print status()
     print diff('git_wrapper.py')

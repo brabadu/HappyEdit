@@ -504,12 +504,15 @@ function loadGitStatus() {
 function changeBranch(branch) {
     var xhr = new XMLHttpRequest();
     var params = 'branch=' + branch;
-    xhr.open("POST", '/branch');
+    xhr.open("POST", '/git/checkout');
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
-            console.log(xhr.responseText);
-            location.reload();
+            if (xhr.status == 200) {
+                location.reload();
+            } else {
+                alert('Error changing branch: ' + xhr.responseText);
+            }
         }
     };
 

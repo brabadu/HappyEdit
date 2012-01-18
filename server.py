@@ -163,25 +163,6 @@ class ProjectFilesServer(Directory):
             return Directory.__call__(self, environ, start_response)
         return self.next_handler(environ, start_response)
 
-class BranchChangeHandler():
-
-    def __init__(self, path):
-        self.path = path
-        self.next_handler = None
-
-    def __call__(self, environ, start_response):
-        if environ['PATH_INFO'].startswith('/branch'):
-            length = int(environ['CONTENT_LENGTH'])
-            params = dict(parse_qsl(environ['wsgi.input'].read(length)))
-            ret = "changing branch to %s" % params['branch']
-            subprocess.check_output(['git', 'checkout', params['branch']])
-            start_response("200 OK", [
-                ('Content-Type', 'application/json'),
-                ('Content-Length', str(len(ret))),
-            ])
-            return [ret]
-        return self.next_handler(environ, start_response)
-
 class ProjectInfoHandler():
 
     def __init__(self, path):
@@ -243,6 +224,15 @@ class GitHandler:
                 ('Content-Length', str(len(ret))),
             ])
             return [ret]
+        elif environ['PATH_INFO'].startswith('/git/checkout'):
+            length = int(environ['CONTENT_LENGTH'])
+            params = dict(parse_qsl(environ['wsgi.input'].read(length)))
+            ret = git.checkout(params['branch'])
+            start_response("200 OK", [
+                ('Content-Type', 'text/plain'),
+                ('Content-Length', str(len(ret))),
+            ])
+            return [ret]
         return self.next_handler(environ, start_response)
 
 def main():
@@ -253,7 +243,6 @@ def main():
     handlers.append(CodeBoxFilesServer(codebox_path))
     handlers.append(GrepHandler(cwd))
     handlers.append(GitHandler())
-    handlers.append(BranchChangeHandler(cwd))
     handlers.append(ProjectInfoHandler(cwd))
     handlers.append(FileListing(cwd))
     handlers.append(SaveHandler(cwd))
