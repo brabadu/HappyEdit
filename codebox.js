@@ -31,9 +31,20 @@ var CommandLine = {
     $popup: null,
     $blocker: null,
     visible: false,
+
     commands: {
-        "w": function() {
-            save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
+        "w": {
+            hideCommandLine: true,
+            fn: function(args) {
+                save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
+            }
+        },
+        "grep": {
+            hideCommandLine: false,
+            fn: function(args) {
+                var q = args.join(' ');
+                CommandLine.grep(q);
+            }
         }
     },
 
@@ -57,15 +68,19 @@ var CommandLine = {
                 console.log(this.value);
                 if (this.value[0] === ":") {
                     var cmd = this.value.split(":")[1];
-                    self.runCommand(cmd);
+                    var split = cmd.split(' ');
+                    var cmd = split.splice(0, 1);
+                    var args = split;
+                    self.runCommand(cmd, args);
                 } else if (this.value[0] === "/") {
                     var needle = this.value.split('/')[1];
                     editor.find(needle);
+                    self.hide();
                 } else if (this.value[0] === "?") {
                     var needle = this.value.split('?')[1];
                     editor.findPrevious(needle);
+                    self.hide();
                 }
-                self.hide();
             }
         }
     },
@@ -78,7 +93,7 @@ var CommandLine = {
         var onFileClick = function() {
             self.hide();
             fileClicked(this);
-        }
+        };
 
         self.$suggestions.innerHTML = '';
 
@@ -95,9 +110,59 @@ var CommandLine = {
         }
     },
 
-    runCommand: function(cmd) {
+    grep: function(q) {
+        var self = this;
+        var xhr = new XMLHttpRequest();
+
+        var onFileClick = function() {
+            self.hide();
+            fileClicked(this);
+        };
+
+        self.$suggestions.innerHTML = '';
+        self.$input.setAttribute('disabled');
+
+        if (!q) {
+            return;
+        }
+
+        xhr.open("GET", '/grep?q=' + encodeURIComponent(q));
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4) {
+                try {
+                    var json = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    console.log('Could not parse grep response');
+                    return;
+                }
+
+                if (json.length) {
+                    var fragment = document.createDocumentFragment();
+                    json.forEach(function(file, i) {
+                        var li = createFileListView(file.filename, file.lineno, onFileClick);
+                        fragment.appendChild(li);
+                    });
+                    self.$suggestions.appendChild(fragment);
+                    self.$suggestions.style.display = 'block';
+                } else {
+                    self.$suggestions.style.display = 'none';
+                }
+                self.$input.removeAttribute('disabled');
+            }
+        };
+
+        xhr.send();
+    },
+
+    runCommand: function(cmd, args) {
+        var self = this;
         if (this.commands.hasOwnProperty(cmd)) {
-            this.commands[cmd]();
+            var command = this.commands[cmd];
+            command.fn(args);
+            if (command.hideCommandLine) {
+                self.hide();
+            }
         } else {
             throw "Unknown command '" + cmd + "'";
         }
@@ -542,47 +607,6 @@ function loadFiles() {
             document.querySelector('#sidebar .pane.files .nav').appendChild(fragment);
             if (openedFileElem) {
                 fileClicked(openedFileElem);
-            }
-        }
-    };
-
-    xhr.send();
-}
-
-function grep() {
-    var q = pendingGrep;
-    var xhr = new XMLHttpRequest();
-    var $ul = document.querySelector('#sidebar .grep .filelist');
-    $ul.innerHTML = '';
-
-    if (!q) {
-        return;
-    }
-
-    pendingGrep = null;
-    grepIsRunning = true;
-
-    xhr.open("GET", '/grep?q=' + encodeURIComponent(q));
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            try {
-                var json = JSON.parse(xhr.responseText);
-            } catch (e) {
-                console.log('Could not parse grep response');
-                return;
-            }
-
-            var fragment = document.createDocumentFragment();
-            json.forEach(function(file, i) {
-                var li = createFileListView(file.filename, file.lineno);
-                fragment.appendChild(li);
-            });
-            $ul.appendChild(fragment);
-
-            grepIsRunning = false;
-            if (pendingGrep !== null) {
-                grep();
             }
         }
     };
