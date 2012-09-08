@@ -97,7 +97,7 @@ var CommandLine = {
 
         self.$suggestions.innerHTML = '';
 
-        if (s.length) {
+        if (s.length && suggestions.length) {
             var fragment = document.createDocumentFragment();
             suggestions.forEach(function(file, i) {
                 var li = createFileListView(file, null, onFileClick);

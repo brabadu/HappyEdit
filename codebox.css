@@ -97,7 +97,7 @@ body {
     width: 480px;
     height: auto;
     padding: 10px;
-    top: 100px;
+    top: 70px;
     left: 50%;
     margin-left: -250px;
     border: 5px solid rgba(127, 127, 127, 0.5);
@@ -116,6 +116,10 @@ body {
 .popup label {
     display: block;
     margin: 10px 0;
+}
+.command-line {
+    max-height: 70%;
+    overflow: auto;
 }
 .command-line input {
     width: 100%;
