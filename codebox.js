@@ -3,7 +3,6 @@ var UndoManager = require('ace/undomanager').UndoManager;
 var sessions = {};
 var editor;
 var editorElement;
-var sidebarElement;
 var trie = {};
 var pendingGrep = null;
 var grepIsRunning = false;
@@ -11,6 +10,7 @@ var tabCallbacks = {
     'git': loadGitStatus
 };
 var $settingsPopup;
+var currentlySelectedFilename;
 
 var Mode = function(name, desc, clazz, extensions) {
     this.name = name;
@@ -214,7 +214,10 @@ function getLinesInCurrentBuffer() {
 }
 
 function getCurrentlySelectedFileName() {
-    return document.querySelector('#sidebar .files .selected .title').innerHTML;
+    if (!currentlySelectedFilename) {
+        throw "currentlySelectedFilename is not set";
+    }
+    return currentlySelectedFilename;
 }
 
 function save(fileName, lines) {
@@ -231,7 +234,6 @@ function save(fileName, lines) {
             document.querySelector('#notification').style.visibility = 'hidden';
             console.log(xhr.responseText);
             editor.getSession().getUndoManager().reset();
-            removeClass(document.querySelector('#sidebar .files .selected'), 'modified');
         }
     };
 
@@ -239,20 +241,17 @@ function save(fileName, lines) {
 }
 
 function updateSize() {
-    var w = window.innerWidth - 150;
+    var w = window.innerWidth;
     var h = window.innerHeight - document.querySelector('#top').offsetHeight;
 
     editorElement.style.width = w + 'px';
     editorElement.style.height = h + 'px';
-
-    sidebarElement.style.height = h + 'px';
 }
 
 window.onload = function() {
     editor = ace.edit("editor");
     session = editor.getSession();
     editorElement = document.getElementById('editor');
-    sidebarElement = document.getElementById('sidebar');
     //editor.renderer.onResize(true);
 
     CommandLine.init();
@@ -294,31 +293,6 @@ window.onload = function() {
         }
     });
 
-    function onTabClick(tabElem) {
-        var paneClass = tabElem.getAttribute('rel');
-        var oldTab = document.querySelector('#sidebar .tab.selected');
-        var oldPane = document.querySelector('#sidebar .pane.selected');
-        var newPane = document.querySelector('#sidebar .pane.' + paneClass);
-
-        removeClass(oldTab, 'selected');
-        removeClass(oldPane, 'selected');
-
-        addClass(tabElem, 'selected');
-        addClass(newPane, 'selected');
-
-        if (tabCallbacks.hasOwnProperty(paneClass)) {
-            tabCallbacks[paneClass]();
-        }
-    }
-
-    var tabs = document.querySelectorAll('#sidebar .tabs li');
-    for (var i = 0; i < tabs.length; i += 1) {
-        tabs[i].addEventListener('click', function(event) {
-            onTabClick(this);
-        });
-    }
-    onTabClick(tabs[0]);
-
     document.querySelector('.popup .close').addEventListener('click', function(event) {
         togglePopup($settingsPopup);
     });
@@ -348,42 +322,13 @@ window.onload = function() {
         }
     };
 
-    document.querySelector('#sidebar .files input').addEventListener('keyup', function(event) {
-        var i = 0;
-        var suggestions = getAutoSuggestions(this.value);
-
-        document.querySelector('#sidebar .files .suggestions').innerHTML = '';
-
-        if (this.value.length) {
-            var fragment = document.createDocumentFragment();
-            suggestions.forEach(function(file, i) {
-                var li = createFileListView(file);
-                fragment.appendChild(li);
-            });
-            document.querySelector('#sidebar .files .nav').style.display = 'none';
-            document.querySelector('#sidebar .files .suggestions').appendChild(fragment);
-            document.querySelector('#sidebar .files .suggestions').style.display = 'block';
-        } else {
-            document.querySelector('#sidebar .files .nav').style.display = 'block';
-            document.querySelector('#sidebar .files .suggestions').style.display = 'none';
-        }
-    });
-
-    document.querySelector('#sidebar .grep input').addEventListener('keyup', function(event) {
-        document.querySelector('#sidebar .grep .result').innerHTML = '';
-
-        pendingGrep = this.value;
-        if (!grepIsRunning) {
-            grep();
-        }
-    });
-
     document.querySelector('#top .settings').addEventListener('click', function(event) {
         if (localStorage.ignored_extensions) {
             document.querySelector('.popup.settings input.ignored_extensions').value = JSON.parse(localStorage.ignored_extensions).join(',');
         }
         togglePopup($settingsPopup);
     });
+
     document.querySelector('.popup.settings input[type=submit]').addEventListener('click', function(event) {
         try {
             var value = document.querySelector('.popup.settings input.ignored_extensions').value;
@@ -431,13 +376,19 @@ function onGitFileClicked(event) {
 }
 
 function fileClicked(elem) {
-    removeClass(document.querySelector('.filelist .selected'), 'selected');
-
-    var xhr = new XMLHttpRequest();
     var filename = elem.getAttribute('rel');
     var lineNumberSpan = elem.querySelector('.lineno');
-    var url = '/files/' + filename;
+    var lineNumber = null;
+    if (lineNumberSpan) {
+        var lineNumber = lineNumberSpan.innerHTML;
+    }
+    openFile(filename, lineNumber)
+}
 
+function openFile(filename, lineNumber) {
+    var xhr = new XMLHttpRequest();
+    var url = '/files/' + filename;
+    window.currentlySelectedFilename = filename;
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -449,17 +400,18 @@ function fileClicked(elem) {
                 sessions[filename] = session;
             }
 
+            /*
             session.getDocument().on('change', function(event) {
                 addClass(elem, 'modified');
                 if (session.getUndoManager().$undoStack.length === 0) {
                     removeClass(elem, 'modified');
                 }
             });
+            */
 
-            if (lineNumberSpan) {
-                var lineno = lineNumberSpan.innerHTML;
-                editor.gotoLine(lineno);
-                editor.scrollToLine(lineno);
+            if (lineNumber) {
+                editor.gotoLine(lineNumber);
+                editor.scrollToLine(lineNumber);
             }
             editor.setSession(session);
         }
@@ -467,8 +419,6 @@ function fileClicked(elem) {
         localStorage.filename = filename;
     };
     xhr.send();
-
-    addClass(elem, 'selected');
 }
 
 function gitFileClicked(elem) {
@@ -595,19 +545,12 @@ function loadFiles() {
         if (xhr.readyState == 4) {
             var json = JSON.parse(xhr.responseText);
             var fragment = document.createDocumentFragment();
-            var openedFileElem;
             json.forEach(function(filename, i) {
-                var li = createFileListView(filename);
                 if (filename === localStorage.filename) {
-                    openedFileElem = li;
+                    openFile(filename);
                 }
-                fragment.appendChild(li);
                 makeAutoSuggestable(filename);
             });
-            document.querySelector('#sidebar .pane.files .nav').appendChild(fragment);
-            if (openedFileElem) {
-                fileClicked(openedFileElem);
-            }
         }
     };
 

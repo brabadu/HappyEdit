@@ -60,20 +60,9 @@ body {
     margin-left: 5px; 
     font-weight: bold;
 }
-#sidebar {
-    background: rgb(217, 222, 229);
-    width: 149px;
-    overflow: hidden;
-    border-right: 1px solid rgb(180, 180, 180);
-    overflow-y: scroll;
-}
-#sidebar input[type=search] {
-    width: 100%;
-}
 #editor {
     position: absolute;
     top: 28px;
-    left: 150px;
 }
 #notification {
     text-align: center;
