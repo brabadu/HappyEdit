@@ -53,10 +53,16 @@ var CommandLine = {
             }
             if (event.keyCode === 13) {
                 if (this.value[0] === ":") {
-                    cmd = this.value.split(":")[1];
+                    var cmd = this.value.split(":")[1];
                     self.runCommand(cmd);
-                    self.hide();
+                } else if (this.value[0] === "/") {
+                    var needle = this.value.split('/')[1];
+                    editor.find(needle);
+                } else if (this.value[0] === "?") {
+                    var needle = this.value.split('?')[1];
+                    editor.findPrevious(needle);
                 }
+                self.hide();
             }
         }
     },
@@ -220,6 +226,18 @@ window.onload = function() {
     editor.getKeyboardHandler().actions[':'] = {
         fn: function(editor, range, count, param) {
             CommandLine.show(":");
+        }
+    };
+
+    editor.getKeyboardHandler().actions['/'] = {
+        fn: function(editor, range, count, param) {
+            CommandLine.show("/");
+        }
+    };
+
+    editor.getKeyboardHandler().actions['?'] = {
+        fn: function(editor, range, count, param) {
+            CommandLine.show("?");
         }
     };
 
