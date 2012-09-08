@@ -10,6 +10,7 @@ var grepIsRunning = false;
 var tabCallbacks = {
     'git': loadGitStatus
 };
+var $settingsPopup;
 
 var Mode = function(name, desc, clazz, extensions) {
     this.name = name;
@@ -24,6 +25,75 @@ var Mode = function(name, desc, clazz, extensions) {
 Mode.prototype.supportsFile = function(filename) {
     return filename.match(this.extRe);
 };
+
+var CommandLine = {
+    $input: null,
+    $popup: null,
+    $blocker: null,
+    visible: false,
+    commands: {
+        "w": function() {
+            save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
+        }
+    },
+
+    init: function() {
+        var self = this;
+        self.$popup = document.querySelector('.popup.command-line');
+        self.$input = document.querySelector('.popup.command-line input');
+        self.$blocker = document.querySelector('#blocker');
+
+        self.$input.blur = function() {
+            self.hide();
+        }
+
+        self.$input.onkeyup = function(event) {
+            if (event.keyCode === 27) {
+                self.hide();
+            }
+            if (event.keyCode === 13) {
+                if (this.value[0] === ":") {
+                    cmd = this.value.split(":")[1];
+                    self.runCommand(cmd);
+                    self.hide();
+                }
+            }
+        }
+    },
+
+    runCommand: function(cmd) {
+        if (this.commands.hasOwnProperty(cmd)) {
+            this.commands[cmd]();
+        } else {
+            throw "Unknown command '" + cmd + "'";
+        }
+    },
+
+    isVisible: function() {
+        return this.$popup.style.display === 'block';
+    },
+
+    show: function(startingChar) {
+        var self = this;
+
+        self.$input.value = startingChar;
+        self.$popup.style.display = 'block';
+        self.$blocker.style.display = 'block';
+
+        // Focusing on text input right away does not work for some reason.
+        setTimeout(function() {
+            editor.blur();
+            self.$input.focus();
+        }, 100);
+    },
+
+    hide: function() {
+        var self = this;
+        self.$popup.style.display = 'none';
+        self.$blocker.style.display = 'none';
+        editor.focus();
+    }
+}
 
 var modes = [
     new Mode("text", "Text", require("ace/mode/text").Mode, ["txt"]),
@@ -84,6 +154,9 @@ window.onload = function() {
     sidebarElement = document.getElementById('sidebar');
     //editor.renderer.onResize(true);
 
+    CommandLine.init();
+    $settingsPopup = document.querySelector('.popup.settings');
+
     var vim = require("ace/keyboard/vim").handler;
     editor.setKeyboardHandler(vim);
 
@@ -134,27 +207,21 @@ window.onload = function() {
     onTabClick(tabs[0]);
 
     document.querySelector('.popup .close').addEventListener('click', function(event) {
-        togglePopup();
+        togglePopup($settingsPopup);
     });
 
     document.querySelector('.popup.settings input[type=submit]').addEventListener('click', function(event) {
     });
 
     document.querySelector('#blocker').addEventListener('click', function(event) {
-        togglePopup();
+        togglePopup($settingsPopup);
     });
 
-    editor.commands.addCommand({
-        name: "grep",
-        bindKey: {
-            win: "Ctrl-G",
-            mac: "Command-G",
-            sender: "editor"
-        },
-        exec: function() {
-            togglePopup();
+    editor.getKeyboardHandler().actions[':'] = {
+        fn: function(editor, range, count, param) {
+            CommandLine.show(":");
         }
-    });
+    };
 
     document.querySelector('#sidebar .files input').addEventListener('keyup', function(event) {
         var i = 0;
@@ -190,7 +257,7 @@ window.onload = function() {
         if (localStorage.ignored_extensions) {
             document.querySelector('.popup.settings input.ignored_extensions').value = JSON.parse(localStorage.ignored_extensions).join(',');
         }
-        togglePopup();
+        togglePopup($settingsPopup);
     });
     document.querySelector('.popup.settings input[type=submit]').addEventListener('click', function(event) {
         try {
@@ -205,7 +272,7 @@ window.onload = function() {
                 }
             });
             localStorage.ignored_extensions = JSON.stringify(ignoredExtensions);
-            togglePopup();
+            togglePopup($settingsPopup);
         } catch (e) {
             alert(e);
         }
@@ -497,8 +564,8 @@ function loadGitStatus() {
     });
 }
 
-function togglePopup() {
-    var $popup = document.querySelector('.popup.settings');
+
+function togglePopup($popup) {
     var $blocker = document.querySelector('#blocker');
 
     if ($popup.style.display === 'none') {
@@ -507,6 +574,6 @@ function togglePopup() {
     } else {
         $popup.style.display = 'none';
         $blocker.style.display = 'none';
+        editor.focus();
     }
 }
-
