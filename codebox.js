@@ -41,6 +41,7 @@ var CommandLine = {
         var self = this;
         self.$popup = document.querySelector('.popup.command-line');
         self.$input = document.querySelector('.popup.command-line input');
+        self.$suggestions= document.querySelector('.popup.command-line ul');
         self.$blocker = document.querySelector('#blocker');
 
         self.$input.blur = function() {
@@ -51,7 +52,13 @@ var CommandLine = {
             if (event.keyCode === 27) {
                 self.hide();
             }
+
+            if (this.value[0] !== ':' && this.value[0] !== '/' && this.value[0] !== '?') {
+                self.getAutoCompleteSuggestions(this.value);
+            }
+
             if (event.keyCode === 13) {
+                console.log(this.value);
                 if (this.value[0] === ":") {
                     var cmd = this.value.split(":")[1];
                     self.runCommand(cmd);
@@ -64,6 +71,31 @@ var CommandLine = {
                 }
                 self.hide();
             }
+        }
+    },
+
+    getAutoCompleteSuggestions: function(s) {
+        var self = this;
+        var i = 0;
+        var suggestions = getAutoSuggestions(s);
+
+        var onFileClick = function() {
+            self.hide();
+            fileClicked(this);
+        }
+
+        self.$suggestions.innerHTML = '';
+
+        if (s.length) {
+            var fragment = document.createDocumentFragment();
+            suggestions.forEach(function(file, i) {
+                var li = createFileListView(file, null, onFileClick);
+                fragment.appendChild(li);
+            });
+            self.$suggestions.appendChild(fragment);
+            self.$suggestions.style.display = 'block';
+        } else {
+            self.$suggestions.style.display = 'none';
         }
     },
 
@@ -83,6 +115,8 @@ var CommandLine = {
         var self = this;
 
         self.$input.value = startingChar;
+        self.$suggestions.innerHTML = '';
+        self.$suggestions.style.display = 'none';
         self.$popup.style.display = 'block';
         self.$blocker.style.display = 'block';
 
@@ -184,6 +218,18 @@ window.onload = function() {
         },
         exec: function() {
             save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
+        }
+    });
+
+    editor.commands.addCommand({
+        name: "open file",
+        bindKey: {
+            win: "Ctrl-O",
+            mac: "Command-O",
+            sender: "editor"
+        },
+        exec: function() {
+            CommandLine.show('');
         }
     });
 
@@ -327,7 +373,7 @@ function fileClicked(elem) {
     removeClass(document.querySelector('.filelist .selected'), 'selected');
 
     var xhr = new XMLHttpRequest();
-    var filename = elem.querySelector('.title').innerHTML;
+    var filename = elem.getAttribute('rel');
     var lineNumberSpan = elem.querySelector('.lineno');
     var url = '/files/' + filename;
 
@@ -444,7 +490,8 @@ function createFileListView(file, lineno, clickCallback) {
     var titleSpan = document.createElement('span');
 
     titleSpan.setAttribute('class', 'title');
-    titleSpan.innerHTML = file;
+    titleSpan.innerHTML = capFileName(file, 50);
+    li.setAttribute('rel', file);
     li.appendChild(titleSpan);
 
     if (lineno) {
