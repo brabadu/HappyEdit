@@ -131,7 +131,8 @@ body {
 .command-line li {
     font-size: 16px;
 }
-.command-line li:hover {
+.command-line li:hover,
+.command-line li.hover {
     background: #ddd;
 }
 #top {

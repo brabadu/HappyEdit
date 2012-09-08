@@ -26,6 +26,8 @@ var CommandLine = {
     $popup: null,
     $blocker: null,
     visible: false,
+    selectedSuggestionIndex: null,
+    suggestions: [],
 
     commands: {
         "w": {
@@ -53,14 +55,17 @@ var CommandLine = {
         self.$input.onkeyup = function(event) {
             if (event.keyCode === 27) {
                 self.hide();
-            }
-
-            if (this.value[0] !== ':' && this.value[0] !== '/' && this.value[0] !== '?') {
+            } else if (event.ctrlKey && event.keyCode === 78) {
+                self.navigateSuggestionDown();
+                event.stopPropagation();
+            } else if (event.ctrlKey && event.keyCode === 80) {
+                self.navigateSuggestionUp();
+                event.stopPropagation();
+            } else if (event.keyCode === 17) {
+                // do nothing, it was just the ctrl key lifted up
+            } else if (event.keyCode !== 13 && this.value[0] !== ':' && this.value[0] !== '/' && this.value[0] !== '?') {
                 self.getAutoCompleteSuggestions(this.value);
-            }
-
-            if (event.keyCode === 13) {
-                console.log(this.value);
+            } else if (event.keyCode === 13) {
                 if (this.value[0] === ":") {
                     var cmd = this.value.split(":")[1];
                     var split = cmd.split(' ');
@@ -75,15 +80,42 @@ var CommandLine = {
                     var needle = this.value.split('?')[1];
                     editor.findPrevious(needle);
                     self.hide();
+                } else {
+                    self.openSelectedSuggestion();
                 }
             }
         }
+    },
+
+    navigateSuggestionDown: function() {
+        if (this.selectedSuggestionIndex === null) {
+            this.selectedSuggestionIndex = 0;
+            addClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
+        } else if (this.selectedSuggestionIndex < this.suggestionElements.length - 1) {
+            removeClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
+            this.selectedSuggestionIndex += 1;
+            addClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
+        }
+    },
+
+    navigateSuggestionUp: function() {
+        if (this.selectedSuggestionIndex !== null && this.selectedSuggestionIndex > 0) {
+            removeClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
+            this.selectedSuggestionIndex -= 1;
+            addClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
+        }
+    },
+
+    openSelectedSuggestion: function() {
+        this.suggestionElements[this.selectedSuggestionIndex].onclick();
     },
 
     getAutoCompleteSuggestions: function(s) {
         var self = this;
         var i = 0;
         var suggestions = getAutoSuggestions(s);
+        self.suggestionElements = [];
+        self.selectedSuggestionIndex = null;
 
         var onFileClick = function() {
             self.hide();
@@ -97,6 +129,7 @@ var CommandLine = {
             suggestions.forEach(function(file, i) {
                 var li = createFileListView(file, null, onFileClick);
                 fragment.appendChild(li);
+                self.suggestionElements.push(li);
             });
             self.$suggestions.appendChild(fragment);
             self.$suggestions.style.display = 'block';
@@ -114,6 +147,8 @@ var CommandLine = {
             fileClicked(this);
         };
 
+        self.suggestionElements = [];
+        self.selectedSuggestionIndex = null;
         self.$suggestions.innerHTML = '';
         self.$input.setAttribute('disabled');
 
@@ -137,6 +172,7 @@ var CommandLine = {
                     json.forEach(function(file, i) {
                         var li = createFileListView(file.filename, file.lineno, onFileClick);
                         fragment.appendChild(li);
+                        self.suggestionElements.push(li);
                     });
                     self.$suggestions.appendChild(fragment);
                     self.$suggestions.style.display = 'block';
