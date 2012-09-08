@@ -28,12 +28,15 @@ Mode.prototype.supportsFile = function(filename) {
 var modes = [
     new Mode("text", "Text", require("ace/mode/text").Mode, ["txt"]),
     new Mode("html", "HTML", require("ace/mode/html").Mode, ["html", "htm"]),
+    new Mode("css", "CSS", require("ace/mode/css").Mode, ["css"]),
     new Mode("javascript", "JavaScript", require("ace/mode/javascript").Mode, ["js"]),
     new Mode("json", "JSON", require("ace/mode/json").Mode, ["json"]),
     new Mode("python", "Python", require("ace/mode/python").Mode, ["py"]),
     new Mode("php", "PHP",require("ace/mode/php").Mode, ["php"]),
     new Mode("text", "Text", require("ace/mode/text").Mode, ["txt"])
 ];
+
+var diffMode = new Mode("diff", "Diff", require("ace/mode/diff").Mode, ["diff"]);
 
 function getLinesInCurrentBuffer() {
     return editor.getSession().getValue();
@@ -80,6 +83,9 @@ window.onload = function() {
     editorElement = document.getElementById('editor');
     sidebarElement = document.getElementById('sidebar');
     //editor.renderer.onResize(true);
+
+    var vim = require("ace/keyboard/vim").handler;
+    editor.setKeyboardHandler(vim);
 
     updateSize();
 
@@ -283,6 +289,7 @@ function gitFileClicked(elem) {
 
     ajax.get(url, function(response) {
         var session = new EditSession(response);
+        session.setMode(diffMode.mode);
         editor.setSession(session);
     });
 }
