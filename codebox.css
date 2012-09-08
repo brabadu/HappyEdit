@@ -137,10 +137,6 @@ body {
     font-size: 14px;
     float: left;
 }
-#top select.branch {
-    float: left;
-    margin-left: 10px;
-}
 #top .settings {
     cursor: pointer;
     background: url(/cog.png);

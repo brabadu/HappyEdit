@@ -169,22 +169,10 @@ class ProjectInfoHandler():
         self.path = path
         self.next_handler = None
 
-    def get_branches(self):
-        s = subprocess.check_output(['git', 'branch'])
-        ret = []
-        for line in s.split('\n'):
-            if line:
-                ret.append({
-                    'title': line.split('* ')[-1].strip(),
-                    'selected': line.startswith('*'),
-                })
-        return ret
-
     def __call__(self, environ, start_response):
         if environ['PATH_INFO'].startswith('/info'):
             ret = {
                 'path': self.path,
-                'branches': self.get_branches(),
             }
             ret = json.dumps(ret)
 
@@ -219,15 +207,6 @@ class GitHandler:
             filename = environ['PATH_INFO'].split('/git/diff/')[1]
             filename = os.path.join(filename)
             ret = git.diff(filename)
-            start_response("200 OK", [
-                ('Content-Type', 'text/plain'),
-                ('Content-Length', str(len(ret))),
-            ])
-            return [ret]
-        elif environ['PATH_INFO'].startswith('/git/checkout'):
-            length = int(environ['CONTENT_LENGTH'])
-            params = dict(parse_qsl(environ['wsgi.input'].read(length)))
-            ret = git.checkout(params['branch'])
             start_response("200 OK", [
                 ('Content-Type', 'text/plain'),
                 ('Content-Length', str(len(ret))),

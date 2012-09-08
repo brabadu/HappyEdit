@@ -180,10 +180,6 @@ window.onload = function() {
         }
     });
 
-    document.querySelector('#top select.branch').addEventListener('change', function(event) {
-        changeBranch(this.value);
-    });
-
     document.querySelector('#top .settings').addEventListener('click', function(event) {
         if (localStorage.ignored_extensions) {
             document.querySelector('.popup.settings input.ignored_extensions').value = JSON.parse(localStorage.ignored_extensions).join(',');
@@ -473,13 +469,6 @@ function loadTopMenu() {
                 return;
             }
 
-            var fragment = document.createDocumentFragment();
-            json.branches.forEach(function(branch, i) {
-                var option = createBranchSelectOption(branch);
-                fragment.appendChild(option);
-            });
-            document.querySelector('#top select.branch').appendChild(fragment);
-
             document.querySelector('#top h1').innerHTML = json.path;
         }
     };
@@ -499,24 +488,6 @@ function loadGitStatus() {
         });
         $ul.appendChild(fragment);
     });
-}
-
-function changeBranch(branch) {
-    var xhr = new XMLHttpRequest();
-    var params = 'branch=' + branch;
-    xhr.open("POST", '/git/checkout');
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            if (xhr.status == 200) {
-                location.reload();
-            } else {
-                alert('Error changing branch: ' + xhr.responseText);
-            }
-        }
-    };
-
-    xhr.send(params);
 }
 
 function togglePopup() {
