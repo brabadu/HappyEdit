@@ -4,12 +4,7 @@ var sessions = {};
 var editor;
 var editorElement;
 var trie = {};
-var pendingGrep = null;
-var grepIsRunning = false;
-var tabCallbacks = {
-    'git': loadGitStatus
-};
-var $settingsPopup;
+var settingsPopup;
 var currentlySelectedFilename;
 
 var Mode = function(name, desc, clazz, extensions) {
@@ -252,7 +247,6 @@ window.onload = function() {
     editor = ace.edit("editor");
     session = editor.getSession();
     editorElement = document.getElementById('editor');
-    //editor.renderer.onResize(true);
 
     CommandLine.init();
     $settingsPopup = document.querySelector('.popup.settings');
@@ -267,7 +261,6 @@ window.onload = function() {
     }
 
     loadFiles();
-    loadTopMenu();
 
     editor.commands.addCommand({
         name: "save",
@@ -371,10 +364,6 @@ function onFileClicked(event) {
     fileClicked(this);
 }
 
-function onGitFileClicked(event) {
-    gitFileClicked(this);
-}
-
 function fileClicked(elem) {
     var filename = elem.getAttribute('rel');
     var lineNumberSpan = elem.querySelector('.lineno');
@@ -389,6 +378,7 @@ function openFile(filename, lineNumber) {
     var xhr = new XMLHttpRequest();
     var url = '/files/' + filename;
     window.currentlySelectedFilename = filename;
+    setTopTitle(filename);
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -419,21 +409,6 @@ function openFile(filename, lineNumber) {
         localStorage.filename = filename;
     };
     xhr.send();
-}
-
-function gitFileClicked(elem) {
-    removeClass(document.querySelector('.filelist .selected'), 'selected');
-    addClass(elem, 'selected');
-
-    var filename = elem.querySelector('.title').innerHTML;
-    var lineNumberSpan = elem.querySelector('.lineno');
-    var url = '/git/diff/' + filename;
-
-    ajax.get(url, function(response) {
-        var session = new EditSession(response);
-        session.setMode(diffMode.mode);
-        editor.setSession(session);
-    });
 }
 
 function makeAutoSuggestable(filename) {
@@ -518,15 +493,6 @@ function createFileListView(file, lineno, clickCallback) {
     return li;
 }
 
-function createBranchSelectOption(branch) {
-    var option = document.createElement('option');
-    option.innerHTML = branch.title;
-    if (branch.selected) {
-        option.setAttribute('selected', 'selected');
-    }
-    return option;
-}
-
 function loadFiles() {
     var xhr = new XMLHttpRequest();
     var url = '/files';
@@ -544,7 +510,6 @@ function loadFiles() {
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
             var json = JSON.parse(xhr.responseText);
-            var fragment = document.createDocumentFragment();
             json.forEach(function(filename, i) {
                 if (filename === localStorage.filename) {
                     openFile(filename);
@@ -557,41 +522,9 @@ function loadFiles() {
     xhr.send();
 }
 
-function loadTopMenu() {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", '/info');
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            var json;
-            try {
-                json = JSON.parse(xhr.responseText);
-            } catch (e) {
-                console.log('Couldn not parse info response');
-                return;
-            }
-
-            document.querySelector('#top h1').innerHTML = json.path;
-        }
-    };
-
-    xhr.send();
+function setTopTitle(title) {
+    document.querySelector('#top h1').innerHTML = title;
 }
-
-function loadGitStatus() {
-    var $ul = document.querySelector('.pane.git ul');
-    $ul.innerHTML = '';
-    ajax.get('/git/status', function(response) {
-        var json = JSON.parse(response);
-        var fragment = document.createDocumentFragment();
-        json.modified.forEach(function(filename, i) {
-            var li = createFileListView(filename, null, onGitFileClicked);
-            fragment.appendChild(li);
-        });
-        $ul.appendChild(fragment);
-    });
-}
-
 
 function togglePopup($popup) {
     var $blocker = document.querySelector('#blocker');
