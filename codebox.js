@@ -44,10 +44,6 @@ var CommandLine = {
         self.$suggestions= document.querySelector('.popup.command-line ul');
         self.$blocker = document.querySelector('#blocker');
 
-        self.$input.blur = function() {
-            self.hide();
-        }
-
         self.$input.onkeyup = function(event) {
             if (event.keyCode === 27) {
                 self.hide();
