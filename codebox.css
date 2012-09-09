@@ -119,7 +119,8 @@ body {
 }
 .command-line {
     max-height: 70%;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: rgb(240, 240, 240);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
