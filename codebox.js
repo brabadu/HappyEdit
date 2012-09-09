@@ -3,13 +3,9 @@ var UndoManager = require('ace/undomanager').UndoManager;
 var sessions = {};
 var editor;
 var editorElement;
-var sidebarElement;
 var trie = {};
-var pendingGrep = null;
-var grepIsRunning = false;
-var tabCallbacks = {
-    'git': loadGitStatus
-};
+var settingsPopup;
+var currentlySelectedFilename;
 
 var Mode = function(name, desc, clazz, extensions) {
     this.name = name;
@@ -25,9 +21,216 @@ Mode.prototype.supportsFile = function(filename) {
     return filename.match(this.extRe);
 };
 
+var CommandLine = {
+    $input: null,
+    $popup: null,
+    $blocker: null,
+    visible: false,
+    selectedSuggestionIndex: null,
+    suggestions: [],
+
+    commands: {
+        "w": {
+            hideCommandLine: true,
+            fn: function(args) {
+                save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
+            }
+        },
+        "grep": {
+            hideCommandLine: false,
+            fn: function(args) {
+                var q = args.join(' ');
+                CommandLine.grep(q);
+            }
+        }
+    },
+
+    init: function() {
+        var self = this;
+        self.$popup = document.querySelector('.popup.command-line');
+        self.$input = document.querySelector('.popup.command-line input');
+        self.$suggestions= document.querySelector('.popup.command-line ul');
+        self.$blocker = document.querySelector('#blocker');
+
+        self.$input.onkeyup = function(event) {
+            if (event.keyCode === 27) {
+                self.hide();
+            } else if (event.ctrlKey && event.keyCode === 78) {
+                self.navigateSuggestionDown();
+                event.stopPropagation();
+            } else if (event.ctrlKey && event.keyCode === 80) {
+                self.navigateSuggestionUp();
+                event.stopPropagation();
+            } else if (event.keyCode === 17) {
+                // do nothing, it was just the ctrl key lifted up
+            } else if (event.keyCode !== 13 && this.value[0] !== ':' && this.value[0] !== '/' && this.value[0] !== '?') {
+                self.getAutoCompleteSuggestions(this.value);
+            } else if (event.keyCode === 13) {
+                if (this.value[0] === ":") {
+                    var cmd = this.value.split(":")[1];
+                    var split = cmd.split(' ');
+                    var cmd = split.splice(0, 1);
+                    var args = split;
+                    self.runCommand(cmd, args);
+                } else if (this.value[0] === "/") {
+                    var needle = this.value.split('/')[1];
+                    editor.find(needle);
+                    self.hide();
+                } else if (this.value[0] === "?") {
+                    var needle = this.value.split('?')[1];
+                    editor.findPrevious(needle);
+                    self.hide();
+                } else {
+                    self.openSelectedSuggestion();
+                }
+            }
+        }
+    },
+
+    navigateSuggestionDown: function() {
+        if (this.selectedSuggestionIndex === null) {
+            this.selectedSuggestionIndex = 0;
+            addClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
+        } else if (this.selectedSuggestionIndex < this.suggestionElements.length - 1) {
+            removeClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
+            this.selectedSuggestionIndex += 1;
+            addClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
+        }
+    },
+
+    navigateSuggestionUp: function() {
+        if (this.selectedSuggestionIndex !== null && this.selectedSuggestionIndex > 0) {
+            removeClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
+            this.selectedSuggestionIndex -= 1;
+            addClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
+        }
+    },
+
+    openSelectedSuggestion: function() {
+        this.suggestionElements[this.selectedSuggestionIndex].onclick();
+    },
+
+    getAutoCompleteSuggestions: function(s) {
+        var self = this;
+        var i = 0;
+        var suggestions = getAutoSuggestions(s);
+        self.suggestionElements = [];
+        self.selectedSuggestionIndex = null;
+
+        var onFileClick = function() {
+            self.hide();
+            fileClicked(this);
+        };
+
+        self.$suggestions.innerHTML = '';
+
+        if (s.length && suggestions.length) {
+            var fragment = document.createDocumentFragment();
+            suggestions.forEach(function(file, i) {
+                var li = createFileListView(file, null, onFileClick);
+                fragment.appendChild(li);
+                self.suggestionElements.push(li);
+            });
+            self.$suggestions.appendChild(fragment);
+            self.$suggestions.style.display = 'block';
+        } else {
+            self.$suggestions.style.display = 'none';
+        }
+    },
+
+    grep: function(q) {
+        var self = this;
+        var xhr = new XMLHttpRequest();
+
+        var onFileClick = function() {
+            self.hide();
+            fileClicked(this);
+        };
+
+        self.suggestionElements = [];
+        self.selectedSuggestionIndex = null;
+        self.$suggestions.innerHTML = '';
+        self.$input.setAttribute('disabled');
+
+        if (!q) {
+            return;
+        }
+
+        xhr.open("GET", '/grep?q=' + encodeURIComponent(q));
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4) {
+                try {
+                    var json = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    console.log('Could not parse grep response');
+                    return;
+                }
+
+                if (json.length) {
+                    var fragment = document.createDocumentFragment();
+                    json.forEach(function(file, i) {
+                        var li = createFileListView(file.filename, file.lineno, onFileClick);
+                        fragment.appendChild(li);
+                        self.suggestionElements.push(li);
+                    });
+                    self.$suggestions.appendChild(fragment);
+                    self.$suggestions.style.display = 'block';
+                } else {
+                    self.$suggestions.style.display = 'none';
+                }
+                self.$input.removeAttribute('disabled');
+            }
+        };
+
+        xhr.send();
+    },
+
+    runCommand: function(cmd, args) {
+        var self = this;
+        if (this.commands.hasOwnProperty(cmd)) {
+            var command = this.commands[cmd];
+            command.fn(args);
+            if (command.hideCommandLine) {
+                self.hide();
+            }
+        } else {
+            throw "Unknown command '" + cmd + "'";
+        }
+    },
+
+    isVisible: function() {
+        return this.$popup.style.display === 'block';
+    },
+
+    show: function(startingChar) {
+        var self = this;
+
+        self.$input.value = startingChar;
+        self.$suggestions.innerHTML = '';
+        self.$suggestions.style.display = 'none';
+        self.$popup.style.display = 'block';
+        self.$blocker.style.display = 'block';
+
+        // Focusing on text input right away does not work for some reason.
+        setTimeout(function() {
+            editor.blur();
+            self.$input.focus();
+        }, 100);
+    },
+
+    hide: function() {
+        var self = this;
+        self.$popup.style.display = 'none';
+        self.$blocker.style.display = 'none';
+        editor.focus();
+    }
+}
+
 var modes = [
     new Mode("text", "Text", require("ace/mode/text").Mode, ["txt"]),
     new Mode("html", "HTML", require("ace/mode/html").Mode, ["html", "htm"]),
+    new Mode("css", "CSS", require("ace/mode/css").Mode, ["css"]),
     new Mode("javascript", "JavaScript", require("ace/mode/javascript").Mode, ["js"]),
     new Mode("json", "JSON", require("ace/mode/json").Mode, ["json"]),
     new Mode("python", "Python", require("ace/mode/python").Mode, ["py"]),
@@ -35,12 +238,17 @@ var modes = [
     new Mode("text", "Text", require("ace/mode/text").Mode, ["txt"])
 ];
 
+var diffMode = new Mode("diff", "Diff", require("ace/mode/diff").Mode, ["diff"]);
+
 function getLinesInCurrentBuffer() {
     return editor.getSession().getValue();
 }
 
 function getCurrentlySelectedFileName() {
-    return document.querySelector('#sidebar .files .selected .title').innerHTML;
+    if (!currentlySelectedFilename) {
+        throw "currentlySelectedFilename is not set";
+    }
+    return currentlySelectedFilename;
 }
 
 function save(fileName, lines) {
@@ -57,7 +265,6 @@ function save(fileName, lines) {
             document.querySelector('#notification').style.visibility = 'hidden';
             console.log(xhr.responseText);
             editor.getSession().getUndoManager().reset();
-            removeClass(document.querySelector('#sidebar .files .selected'), 'modified');
         }
     };
 
@@ -65,21 +272,23 @@ function save(fileName, lines) {
 }
 
 function updateSize() {
-    var w = window.innerWidth - 150;
+    var w = window.innerWidth;
     var h = window.innerHeight - document.querySelector('#top').offsetHeight;
 
     editorElement.style.width = w + 'px';
     editorElement.style.height = h + 'px';
-
-    sidebarElement.style.height = h + 'px';
 }
 
 window.onload = function() {
     editor = ace.edit("editor");
     session = editor.getSession();
     editorElement = document.getElementById('editor');
-    sidebarElement = document.getElementById('sidebar');
-    //editor.renderer.onResize(true);
+
+    CommandLine.init();
+    $settingsPopup = document.querySelector('.popup.settings');
+
+    var vim = require("ace/keyboard/vim").handler;
+    editor.setKeyboardHandler(vim);
 
     updateSize();
 
@@ -88,7 +297,6 @@ window.onload = function() {
     }
 
     loadFiles();
-    loadTopMenu();
 
     editor.commands.addCommand({
         name: "save",
@@ -102,90 +310,54 @@ window.onload = function() {
         }
     });
 
-    function onTabClick(tabElem) {
-        var paneClass = tabElem.getAttribute('rel');
-        var oldTab = document.querySelector('#sidebar .tab.selected');
-        var oldPane = document.querySelector('#sidebar .pane.selected');
-        var newPane = document.querySelector('#sidebar .pane.' + paneClass);
-
-        removeClass(oldTab, 'selected');
-        removeClass(oldPane, 'selected');
-
-        addClass(tabElem, 'selected');
-        addClass(newPane, 'selected');
-
-        if (tabCallbacks.hasOwnProperty(paneClass)) {
-            tabCallbacks[paneClass]();
+    editor.commands.addCommand({
+        name: "open file",
+        bindKey: {
+            win: "Ctrl-O",
+            mac: "Command-O",
+            sender: "editor"
+        },
+        exec: function() {
+            CommandLine.show('');
         }
-    }
-
-    var tabs = document.querySelectorAll('#sidebar .tabs li');
-    for (var i = 0; i < tabs.length; i += 1) {
-        tabs[i].addEventListener('click', function(event) {
-            onTabClick(this);
-        });
-    }
-    onTabClick(tabs[0]);
+    });
 
     document.querySelector('.popup .close').addEventListener('click', function(event) {
-        togglePopup();
+        togglePopup($settingsPopup);
     });
 
     document.querySelector('.popup.settings input[type=submit]').addEventListener('click', function(event) {
     });
 
     document.querySelector('#blocker').addEventListener('click', function(event) {
-        togglePopup();
+        togglePopup($settingsPopup);
     });
 
-    editor.commands.addCommand({
-        name: "grep",
-        bindKey: {
-            win: "Ctrl-G",
-            mac: "Command-G",
-            sender: "editor"
-        },
-        exec: function() {
-            togglePopup();
+    editor.getKeyboardHandler().actions[':'] = {
+        fn: function(editor, range, count, param) {
+            CommandLine.show(":");
         }
-    });
+    };
 
-    document.querySelector('#sidebar .files input').addEventListener('keyup', function(event) {
-        var i = 0;
-        var suggestions = getAutoSuggestions(this.value);
-
-        document.querySelector('#sidebar .files .suggestions').innerHTML = '';
-
-        if (this.value.length) {
-            var fragment = document.createDocumentFragment();
-            suggestions.forEach(function(file, i) {
-                var li = createFileListView(file);
-                fragment.appendChild(li);
-            });
-            document.querySelector('#sidebar .files .nav').style.display = 'none';
-            document.querySelector('#sidebar .files .suggestions').appendChild(fragment);
-            document.querySelector('#sidebar .files .suggestions').style.display = 'block';
-        } else {
-            document.querySelector('#sidebar .files .nav').style.display = 'block';
-            document.querySelector('#sidebar .files .suggestions').style.display = 'none';
+    editor.getKeyboardHandler().actions['/'] = {
+        fn: function(editor, range, count, param) {
+            CommandLine.show("/");
         }
-    });
+    };
 
-    document.querySelector('#sidebar .grep input').addEventListener('keyup', function(event) {
-        document.querySelector('#sidebar .grep .result').innerHTML = '';
-
-        pendingGrep = this.value;
-        if (!grepIsRunning) {
-            grep();
+    editor.getKeyboardHandler().actions['?'] = {
+        fn: function(editor, range, count, param) {
+            CommandLine.show("?");
         }
-    });
+    };
 
     document.querySelector('#top .settings').addEventListener('click', function(event) {
         if (localStorage.ignored_extensions) {
             document.querySelector('.popup.settings input.ignored_extensions').value = JSON.parse(localStorage.ignored_extensions).join(',');
         }
-        togglePopup();
+        togglePopup($settingsPopup);
     });
+
     document.querySelector('.popup.settings input[type=submit]').addEventListener('click', function(event) {
         try {
             var value = document.querySelector('.popup.settings input.ignored_extensions').value;
@@ -199,7 +371,7 @@ window.onload = function() {
                 }
             });
             localStorage.ignored_extensions = JSON.stringify(ignoredExtensions);
-            togglePopup();
+            togglePopup($settingsPopup);
         } catch (e) {
             alert(e);
         }
@@ -228,18 +400,21 @@ function onFileClicked(event) {
     fileClicked(this);
 }
 
-function onGitFileClicked(event) {
-    gitFileClicked(this);
+function fileClicked(elem) {
+    var filename = elem.getAttribute('rel');
+    var lineNumberSpan = elem.querySelector('.lineno');
+    var lineNumber = null;
+    if (lineNumberSpan) {
+        var lineNumber = lineNumberSpan.innerHTML;
+    }
+    openFile(filename, lineNumber)
 }
 
-function fileClicked(elem) {
-    removeClass(document.querySelector('.filelist .selected'), 'selected');
-
+function openFile(filename, lineNumber) {
     var xhr = new XMLHttpRequest();
-    var filename = elem.querySelector('.title').innerHTML;
-    var lineNumberSpan = elem.querySelector('.lineno');
     var url = '/files/' + filename;
-
+    window.currentlySelectedFilename = filename;
+    setTopTitle(filename);
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -251,17 +426,18 @@ function fileClicked(elem) {
                 sessions[filename] = session;
             }
 
+            /*
             session.getDocument().on('change', function(event) {
                 addClass(elem, 'modified');
                 if (session.getUndoManager().$undoStack.length === 0) {
                     removeClass(elem, 'modified');
                 }
             });
+            */
 
-            if (lineNumberSpan) {
-                var lineno = lineNumberSpan.innerHTML;
-                editor.gotoLine(lineno);
-                editor.scrollToLine(lineno);
+            if (lineNumber) {
+                editor.gotoLine(lineNumber);
+                editor.scrollToLine(lineNumber);
             }
             editor.setSession(session);
         }
@@ -269,22 +445,6 @@ function fileClicked(elem) {
         localStorage.filename = filename;
     };
     xhr.send();
-
-    addClass(elem, 'selected');
-}
-
-function gitFileClicked(elem) {
-    removeClass(document.querySelector('.filelist .selected'), 'selected');
-    addClass(elem, 'selected');
-
-    var filename = elem.querySelector('.title').innerHTML;
-    var lineNumberSpan = elem.querySelector('.lineno');
-    var url = '/git/diff/' + filename;
-
-    ajax.get(url, function(response) {
-        var session = new EditSession(response);
-        editor.setSession(session);
-    });
 }
 
 function makeAutoSuggestable(filename) {
@@ -352,7 +512,8 @@ function createFileListView(file, lineno, clickCallback) {
     var titleSpan = document.createElement('span');
 
     titleSpan.setAttribute('class', 'title');
-    titleSpan.innerHTML = file;
+    titleSpan.innerHTML = capFileName(file, 50);
+    li.setAttribute('rel', file);
     li.appendChild(titleSpan);
 
     if (lineno) {
@@ -366,15 +527,6 @@ function createFileListView(file, lineno, clickCallback) {
     li.onclick = clickCallback || onFileClicked;
 
     return li;
-}
-
-function createBranchSelectOption(branch) {
-    var option = document.createElement('option');
-    option.innerHTML = branch.title;
-    if (branch.selected) {
-        option.setAttribute('selected', 'selected');
-    }
-    return option;
 }
 
 function loadFiles() {
@@ -394,104 +546,23 @@ function loadFiles() {
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
             var json = JSON.parse(xhr.responseText);
-            var fragment = document.createDocumentFragment();
-            var openedFileElem;
             json.forEach(function(filename, i) {
-                var li = createFileListView(filename);
                 if (filename === localStorage.filename) {
-                    openedFileElem = li;
+                    openFile(filename);
                 }
-                fragment.appendChild(li);
                 makeAutoSuggestable(filename);
             });
-            document.querySelector('#sidebar .pane.files .nav').appendChild(fragment);
-            if (openedFileElem) {
-                fileClicked(openedFileElem);
-            }
         }
     };
 
     xhr.send();
 }
 
-function grep() {
-    var q = pendingGrep;
-    var xhr = new XMLHttpRequest();
-    var $ul = document.querySelector('#sidebar .grep .filelist');
-    $ul.innerHTML = '';
-
-    if (!q) {
-        return;
-    }
-
-    pendingGrep = null;
-    grepIsRunning = true;
-
-    xhr.open("GET", '/grep?q=' + encodeURIComponent(q));
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            try {
-                var json = JSON.parse(xhr.responseText);
-            } catch (e) {
-                console.log('Could not parse grep response');
-                return;
-            }
-
-            var fragment = document.createDocumentFragment();
-            json.forEach(function(file, i) {
-                var li = createFileListView(file.filename, file.lineno);
-                fragment.appendChild(li);
-            });
-            $ul.appendChild(fragment);
-
-            grepIsRunning = false;
-            if (pendingGrep !== null) {
-                grep();
-            }
-        }
-    };
-
-    xhr.send();
+function setTopTitle(title) {
+    document.querySelector('#top h1').innerHTML = title;
 }
 
-function loadTopMenu() {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", '/info');
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            var json;
-            try {
-                json = JSON.parse(xhr.responseText);
-            } catch (e) {
-                console.log('Couldn not parse info response');
-                return;
-            }
-
-            document.querySelector('#top h1').innerHTML = json.path;
-        }
-    };
-
-    xhr.send();
-}
-
-function loadGitStatus() {
-    var $ul = document.querySelector('.pane.git ul');
-    $ul.innerHTML = '';
-    ajax.get('/git/status', function(response) {
-        var json = JSON.parse(response);
-        var fragment = document.createDocumentFragment();
-        json.modified.forEach(function(filename, i) {
-            var li = createFileListView(filename, null, onGitFileClicked);
-            fragment.appendChild(li);
-        });
-        $ul.appendChild(fragment);
-    });
-}
-
-function togglePopup() {
-    var $popup = document.querySelector('.popup.settings');
+function togglePopup($popup) {
     var $blocker = document.querySelector('#blocker');
 
     if ($popup.style.display === 'none') {
@@ -500,6 +571,6 @@ function togglePopup() {
     } else {
         $popup.style.display = 'none';
         $blocker.style.display = 'none';
+        editor.focus();
     }
 }
-

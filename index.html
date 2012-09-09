@@ -18,7 +18,13 @@
     <body>
         <div id="blocker">
         </div>
-        <div class="popup settings">
+        <div class="popup command-line" style="display:none">
+            <div>
+                <input type="text" class="cmd" />
+                <ul class="suggestions filelist"></ul>
+            </div>
+        </div>
+        <div class="popup settings" style="display:none">
             <span class="close">X</span>
             <h2>Settings</h2>
 
@@ -34,27 +40,6 @@
             <div style="clear:both"></div>
         </div>
 
-        <div id="sidebar">
-            <ul class="tabs">
-                <li class="tab files" rel="files">Files</li>
-                <li class="tab grep" rel="grep">Grep</li>
-                <li class="tab git" rel="git">Git</li>
-            </ul>
-            <div class="panes">
-                <div class="pane files">
-                    <input type="search" />
-                    <ul class="nav filelist"></ul>
-                    <ul class="suggestions filelist"></ul>
-                </div>
-                <div class="pane grep">
-                    <input type="search" />
-                    <ul class="result filelist"></ul>
-                </div>
-                <div class="pane git">
-                    <ul class="result filelist"></ul>
-                </div>
-            </div>
-        </div>
         <div id="editor"></div>
 
     </body>
