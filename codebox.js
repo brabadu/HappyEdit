@@ -298,6 +298,8 @@ window.onload = function() {
 
     loadFiles();
 
+    editor.setAnimatedScroll(true);
+
     editor.commands.addCommand({
         name: "save",
         bindKey: {
