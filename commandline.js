@@ -46,7 +46,7 @@ var CommandLine = {
         self.$suggestions= document.querySelector('.popup.command-line ul');
         self.$blocker = document.querySelector('#blocker');
 
-        self.$input.onkeyup = function(event) {
+        self.$input.onkeyup= function(event) {
             if (event.keyCode === 27) {
                 self.hide();
             } else if (event.ctrlKey && event.keyCode === 78) {
@@ -57,8 +57,6 @@ var CommandLine = {
                 event.stopPropagation();
             } else if (event.keyCode === 17) {
                 // do nothing, it was just the ctrl key lifted up
-            } else if (event.keyCode !== 13 && this.value[0] !== ':' && this.value[0] !== '/' && this.value[0] !== '?') {
-                self.getAutoCompleteSuggestions(this.value);
             } else if (event.keyCode === 13) {
                 if (this.value[0] === ":") {
                     var cmd = this.value.split(":")[1];
@@ -81,6 +79,12 @@ var CommandLine = {
                     self.hide();
                 } else {
                     self.openSelectedSuggestion();
+                }
+            } else if (this.value[0] !== ':' && this.value[0] !== '/' && this.value[0] !== '?') {
+                if (this.value === '') {
+                    self.showOpenBuffers();
+                } else {
+                    self.getAutoCompleteSuggestions(this.value);
                 }
             }
         }
@@ -109,24 +113,31 @@ var CommandLine = {
         this.suggestionElements[this.selectedSuggestionIndex].onclick();
     },
 
-    getAutoCompleteSuggestions: function(s) {
+    fillSuggestionsList: function(suggestions) {
         var self = this;
-        var i = 0;
-        var suggestions = getAutoSuggestions(s);
-        self.suggestionElements = [];
-        self.selectedSuggestionIndex = null;
+        var fragment = document.createDocumentFragment();
+        var li;
 
         var onFileClick = function() {
             self.hide();
             fileClicked(this);
         };
 
+        self.suggestionElements = [];
+        self.selectedSuggestionIndex = null;
         self.$suggestions.innerHTML = '';
 
-        if (s.length && suggestions.length) {
-            var fragment = document.createDocumentFragment();
+        if (suggestions.length) {
             suggestions.forEach(function(file, i) {
-                var li = createFileListView(file, null, onFileClick);
+                var filename;
+                var lineNumber;
+                if (file instanceof Object) {
+                    filename = file.filename;
+                    lineNumber = file.lineno;
+                } else {
+                    filename = file;
+                }
+                li = createFileListView(filename, lineNumber, onFileClick);
                 fragment.appendChild(li);
                 self.suggestionElements.push(li);
             });
@@ -137,48 +148,46 @@ var CommandLine = {
         }
     },
 
+    showOpenBuffers: function() {
+        var self = this;
+        var filename;
+        var filenames = [];
+
+        for (filename in window.sessions) {
+            if (window.sessions.hasOwnProperty(filename)) {
+                filenames.push(filename);
+            }
+        }
+
+        self.fillSuggestionsList(filenames);
+    },
+
+    getAutoCompleteSuggestions: function(s) {
+        this.fillSuggestionsList(getAutoSuggestions(s));
+    },
+
     grep: function(q) {
         var self = this;
         var xhr = new XMLHttpRequest();
-
-        var onFileClick = function() {
-            self.hide();
-            fileClicked(this);
-        };
-
-        self.suggestionElements = [];
-        self.selectedSuggestionIndex = null;
-        self.$suggestions.innerHTML = '';
-        self.$input.setAttribute('disabled');
 
         if (!q) {
             return;
         }
 
+        self.$input.setAttribute('disabled');
+
         xhr.open("GET", '/grep?q=' + encodeURIComponent(q));
 
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4) {
+                self.$input.removeAttribute('disabled');
                 try {
                     var json = JSON.parse(xhr.responseText);
                 } catch (e) {
-                    console.log('Could not parse grep response');
+                    throw 'Could not parse grep response';
                     return;
                 }
-
-                if (json.length) {
-                    var fragment = document.createDocumentFragment();
-                    json.forEach(function(file, i) {
-                        var li = createFileListView(file.filename, file.lineno, onFileClick);
-                        fragment.appendChild(li);
-                        self.suggestionElements.push(li);
-                    });
-                    self.$suggestions.appendChild(fragment);
-                    self.$suggestions.style.display = 'block';
-                } else {
-                    self.$suggestions.style.display = 'none';
-                }
-                self.$input.removeAttribute('disabled');
+                self.fillSuggestionsList(json);
             }
         };
 
@@ -214,6 +223,10 @@ var CommandLine = {
         self.$suggestions.style.display = 'none';
         self.$popup.style.display = 'block';
         self.$blocker.style.display = 'block';
+
+        if (startingChar === '') {
+            self.showOpenBuffers();
+        }
 
         // Focusing on text input right away does not work for some reason.
         setTimeout(function() {
