@@ -13,6 +13,12 @@ var CommandLine = {
                 save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
             }
         },
+        "settings": {
+            hideCommandLine: true,
+            fn: function(args) {
+                Settings.show();
+            }
+        },
         "grep": {
             hideCommandLine: false,
             fn: function(args) {
