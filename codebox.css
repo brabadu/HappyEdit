@@ -124,6 +124,7 @@ body {
 .command-line input {
     width: 100%;
     font-size: 22px;
+    outline: none;
 }
 .command-line ul {
     margin-top: 10px;
