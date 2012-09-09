@@ -188,6 +188,10 @@ var CommandLine = {
     show: function(startingChar) {
         var self = this;
 
+        self.$blocker.onclick = function() {
+            self.hide();
+        };
+
         self.$input.value = startingChar;
         self.$suggestions.innerHTML = '';
         self.$suggestions.style.display = 'none';

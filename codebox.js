@@ -4,7 +4,6 @@ var sessions = {};
 var editor;
 var editorElement;
 var trie = {};
-var settingsPopup;
 var currentlySelectedFilename;
 
 var Mode = function(name, desc, clazz, extensions) {
@@ -79,19 +78,16 @@ window.onload = function() {
     editorElement = document.getElementById('editor');
 
     CommandLine.init();
-    $settingsPopup = document.querySelector('.popup.settings');
-
-    var vim = require("ace/keyboard/vim").handler;
-    editor.setKeyboardHandler(vim);
-
-    updateSize();
+    Settings.init();
 
     window.onresize = function(event) {
         updateSize();
     }
 
+    updateSize();
     loadFiles();
 
+    editor.setKeyboardHandler(require("ace/keyboard/vim").handler);
     editor.setAnimatedScroll(true);
 
     editor.commands.addCommand({
@@ -118,17 +114,6 @@ window.onload = function() {
         }
     });
 
-    document.querySelector('.popup .close').addEventListener('click', function(event) {
-        togglePopup($settingsPopup);
-    });
-
-    document.querySelector('.popup.settings input[type=submit]').addEventListener('click', function(event) {
-    });
-
-    document.querySelector('#blocker').addEventListener('click', function(event) {
-        togglePopup($settingsPopup);
-    });
-
     editor.getKeyboardHandler().actions[':'] = {
         fn: function(editor, range, count, param) {
             CommandLine.show(":");
@@ -146,32 +131,6 @@ window.onload = function() {
             CommandLine.show("?");
         }
     };
-
-    document.querySelector('#top .settings').addEventListener('click', function(event) {
-        if (localStorage.ignored_extensions) {
-            document.querySelector('.popup.settings input.ignored_extensions').value = JSON.parse(localStorage.ignored_extensions).join(',');
-        }
-        togglePopup($settingsPopup);
-    });
-
-    document.querySelector('.popup.settings input[type=submit]').addEventListener('click', function(event) {
-        try {
-            var value = document.querySelector('.popup.settings input.ignored_extensions').value;
-            var ignoredExtensions = [];
-            value.split(',').forEach(function(ext, i) {
-                if (ext.length) {
-                    if (ext[0] !== '.') {
-                        ext = '.' + ext;
-                    }
-                    ignoredExtensions.push(ext)
-                }
-            });
-            localStorage.ignored_extensions = JSON.stringify(ignoredExtensions);
-            togglePopup($settingsPopup);
-        } catch (e) {
-            alert(e);
-        }
-    });
 };
 
 function getModeForFile(filename) {
@@ -356,17 +315,4 @@ function loadFiles() {
 
 function setTopTitle(title) {
     document.querySelector('#top h1').innerHTML = title;
-}
-
-function togglePopup($popup) {
-    var $blocker = document.querySelector('#blocker');
-
-    if ($popup.style.display === 'none') {
-        $popup.style.display = 'block';
-        $blocker.style.display = 'block';
-    } else {
-        $popup.style.display = 'none';
-        $blocker.style.display = 'none';
-        editor.focus();
-    }
 }
