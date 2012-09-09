@@ -121,6 +121,7 @@ body {
     max-height: 70%;
     overflow: auto;
     background: rgb(240, 240, 240);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 .command-line input {
     width: 100%;
