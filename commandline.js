@@ -13,6 +13,17 @@ var CommandLine = {
                 save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
             }
         },
+        "e": {
+            hideCommandLine: true,
+            fn: function(args) {
+                var filename = args.join(' ');
+                if (filename) {
+                    openFile(filename);
+                } else {
+                    throw "Bad filename";
+                }
+            }
+        },
         "settings": {
             hideCommandLine: true,
             fn: function(args) {
