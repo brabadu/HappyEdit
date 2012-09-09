@@ -52,6 +52,10 @@ function removeClass(elem, className) {
     elem.setAttribute('class', newClassNames.join(' '));
 }
 
+function isNumeric(num) {
+    return parseFloat(num).toString() == num;
+}
+
 var ajax = {
     get: function(url, callback) {
         var xhr = new XMLHttpRequest();

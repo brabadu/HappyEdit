@@ -71,7 +71,12 @@ var CommandLine = {
                     var split = cmd.split(' ');
                     var cmd = split.splice(0, 1);
                     var args = split;
-                    self.runCommand(cmd, args);
+                    if (isNumeric(cmd)) {
+                        editor.gotoLine(cmd);
+                        self.hide();
+                    } else {
+                        self.runCommand(cmd, args);
+                    }
                 } else if (this.value[0] === "/") {
                     var needle = this.value.split('/')[1];
                     editor.find(needle);
