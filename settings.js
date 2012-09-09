@@ -7,10 +7,6 @@ var Settings = {
         
         self.$popup = document.querySelector('.popup.settings');
         self.$blocker = document.querySelector('#blocker');
-    
-        document.querySelector('#top .settings').addEventListener('click', function(event) {
-            self.show();
-        });
         
         self.$popup.querySelector('.close').addEventListener('click', function(event) {
             self.hide();
