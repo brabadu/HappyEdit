@@ -41,10 +41,6 @@ body {
     margin-left: 5px; 
     font-weight: bold;
 }
-#editor {
-    position: absolute;
-    top: 28px;
-}
 #notification {
     text-align: center;
     position: fixed;

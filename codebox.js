@@ -5,6 +5,8 @@ var editor;
 var editorElement;
 var trie = {};
 var currentlySelectedFilename;
+var HOST = 'http://localhost:8888';
+var ignoredExtensions = [];
 
 var Mode = function(name, desc, clazz, extensions) {
     this.name = name;
@@ -46,7 +48,7 @@ function getCurrentlySelectedFileName() {
 
 function save(fileName, lines) {
     var xhr = new XMLHttpRequest();
-    var url = '/files/' + encodeURIComponent(fileName);
+    var url = HOST + '/files/' + encodeURIComponent(fileName);
     var params = 'body=' + encodeURIComponent(lines);
     xhr.open("POST", url);
     document.querySelector('#notification').style.visibility = 'visible';
@@ -167,7 +169,7 @@ function fileClicked(elem) {
 
 function openFile(filename, lineNumber) {
     var xhr = new XMLHttpRequest();
-    var url = '/files/' + filename;
+    var url = HOST + '/files/' + filename;
     window.currentlySelectedFilename = filename;
     setTopTitle(filename);
     xhr.open("GET", url);
@@ -197,7 +199,9 @@ function openFile(filename, lineNumber) {
             editor.setSession(session);
         }
 
-        localStorage.filename = filename;
+        Storage.set('previouslyOpenedFile', filename, function() {
+            console.log('filename (hopefully) set in storage');
+        });
     };
     xhr.send();
 }
@@ -286,26 +290,26 @@ function createFileListView(file, lineno, clickCallback) {
 
 function loadFiles() {
     var xhr = new XMLHttpRequest();
-    var url = '/files';
+    var url = HOST + '/files';
 
-    // Configure ignored extensions with:
-    // localStorage.ignored_extensions = JSON.stringify(['.pyc', '.png']);
-
-    var ignoredExtensions = JSON.parse(localStorage.ignored_extensions || '[]');
     if (ignoredExtensions) {
-        url = '/files?ignored_extensions=' + ignoredExtensions.join(',');
+        url = HOST + '/files?ignored_extensions=' + ignoredExtensions.join(',');
     }
 
     xhr.open("GET", url);
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
-            var json = JSON.parse(xhr.responseText);
-            json.forEach(function(filename, i) {
-                if (filename === localStorage.filename) {
-                    openFile(filename);
+            if (xhr.responseText) {
+                var json = JSON.parse(xhr.responseText);
+                json.forEach(function(filename, i) {
+                    makeAutoSuggestable(filename);
+                });
+            }
+            Storage.get('previouslyOpenedFile', null, function(previouslyOpenedFile) {
+                if (previouslyOpenedFile) {
+                    openFile(previouslyOpenedFile);
                 }
-                makeAutoSuggestable(filename);
             });
         }
     };

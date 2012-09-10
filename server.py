@@ -17,6 +17,7 @@ class File:
 
     def __call__(self, environ, start_response):
         start_response("200 OK", [
+            ('Access-Control-Allow-Origin', '*'),
             ('Content-Type', mimetypes.guess_type(self.path)[0]),
             ('Content-Length', str(os.path.getsize(self.path))),
         ])
@@ -44,6 +45,7 @@ class Directory(dict):
     def notfound(self, part, environ, start_response):
         msg =  part + ' not found in ' + repr(self)
         start_response("404 Not Found", [
+            ('Access-Control-Allow-Origin', '*'),
             ('Content-Type', 'text/plain'),
             ('Content-Length', str(len(msg))),
         ])
@@ -85,6 +87,7 @@ class FileListing():
             ignored_extensions = params.get('ignored_extensions', '').split(',')
             response = json.dumps(get_project_files(self.path, ignored_extensions))
             start_response("200 OK", [
+                ('Access-Control-Allow-Origin', '*'),
                 ('Content-Type', 'application/json'),
                 ('Content-Length', str(len(response))),
             ])
@@ -105,6 +108,7 @@ class SaveHandler():
             open(filename, 'w').write(params['body'])
             msg = 'File saved'
             start_response("200 OK", [
+                ('Access-Control-Allow-Origin', '*'),
                 ('Content-Type', 'application/json'),
                 ('Content-Length', str(len(msg))),
             ])
@@ -177,6 +181,7 @@ class ProjectInfoHandler():
             ret = json.dumps(ret)
 
             start_response("200 OK", [
+                ('Access-Control-Allow-Origin', '*'),
                 ('Content-Type', 'application/json'),
                 ('Content-Length', str(len(ret))),
             ])
@@ -188,6 +193,7 @@ class NotFoundHandler:
     def __call__(self, environ, start_response):
         msg = "404 Not Found"
         start_response("200 OK", [
+            ('Access-Control-Allow-Origin', '*'),
             ('Content-Type', 'text/plain'),
             ('Content-Length', str(len(msg))),
         ])
@@ -208,6 +214,7 @@ class GitHandler:
             filename = os.path.join(filename)
             ret = git.diff(filename)
             start_response("200 OK", [
+                ('Access-Control-Allow-Origin', '*'),
                 ('Content-Type', 'text/plain'),
                 ('Content-Length', str(len(ret))),
             ])

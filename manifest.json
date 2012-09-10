@@ -1,0 +1,20 @@
+{
+    "name": "CodeBox",
+    "description": "Vim-like editor for the Web",
+    "manifest_version": 2,
+    "version": "1",
+    "app": {
+        "background": {
+            "scripts": ["background.js"]
+        }
+    },
+    "permissions": [
+        "experimental",
+        "storage",
+        "app.window"
+    ],
+    "icons": {
+        "16": "logo_16x16.png",
+        "128": "logo_128x128.png"
+    }
+}
