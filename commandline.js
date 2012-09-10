@@ -86,6 +86,8 @@ var CommandLine = {
                 } else {
                     self.getAutoCompleteSuggestions(this.value);
                 }
+            } else {
+                self.clearSuggestions();
             }
         }
     },
@@ -113,6 +115,13 @@ var CommandLine = {
         this.suggestionElements[this.selectedSuggestionIndex].onclick();
     },
 
+    clearSuggestions: function(suggestions) {
+        this.suggestionElements = [];
+        this.selectedSuggestionIndex = null;
+        this.$suggestions.innerHTML = '';
+        this.$suggestions.style.display = 'none';
+    },
+
     fillSuggestionsList: function(suggestions) {
         var self = this;
         var fragment = document.createDocumentFragment();
@@ -123,9 +132,7 @@ var CommandLine = {
             fileClicked(this);
         };
 
-        self.suggestionElements = [];
-        self.selectedSuggestionIndex = null;
-        self.$suggestions.innerHTML = '';
+        self.clearSuggestions();
 
         if (suggestions.length) {
             suggestions.forEach(function(file, i) {
