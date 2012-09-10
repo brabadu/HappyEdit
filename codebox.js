@@ -81,6 +81,7 @@ window.onload = function() {
 
     CommandLine.init();
     Settings.init();
+    TopBar.init();
 
     window.onresize = function(event) {
         updateSize();
@@ -171,7 +172,7 @@ function openFile(filename, lineNumber) {
     var xhr = new XMLHttpRequest();
     var url = HOST + '/files/' + filename;
     window.currentlySelectedFilename = filename;
-    setTopTitle(filename);
+    TopBar.setTitle(filename);
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -315,8 +316,4 @@ function loadFiles() {
     };
 
     xhr.send();
-}
-
-function setTopTitle(title) {
-    document.querySelector('#top h1').innerHTML = title;
 }
