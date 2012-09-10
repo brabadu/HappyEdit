@@ -3,10 +3,8 @@ var UndoManager = require('ace/undomanager').UndoManager;
 var sessions = {};
 var editor;
 var editorElement;
-var trie = {};
 var currentlySelectedFilename;
 var HOST = 'http://localhost:8888';
-var ignoredExtensions = [];
 
 var Mode = function(name, desc, clazz, extensions) {
     this.name = name;
@@ -76,19 +74,18 @@ function updateSize() {
 
 window.onload = function() {
     editor = ace.edit("editor");
-    session = editor.getSession();
     editorElement = document.getElementById('editor');
 
     CommandLine.init();
     Settings.init();
     TopBar.init();
+    ProjectFiles.init();
 
     window.onresize = function(event) {
         updateSize();
     }
 
     updateSize();
-    loadFiles();
 
     editor.setKeyboardHandler(require("ace/keyboard/vim").handler);
     editor.setAnimatedScroll(true);
@@ -134,6 +131,12 @@ window.onload = function() {
             CommandLine.show("?");
         }
     };
+
+    Storage.get('previouslyOpenedFile', null, function(previouslyOpenedFile) {
+        if (previouslyOpenedFile) {
+            openFile(previouslyOpenedFile);
+        }
+    });
 };
 
 function getModeForFile(filename) {
@@ -207,66 +210,6 @@ function openFile(filename, lineNumber) {
     xhr.send();
 }
 
-function makeAutoSuggestable(filename) {
-    var parts;
-
-    function add(filename, fullFileName, isLastPart) {
-        var i = 0;
-        var key = '';
-        var hash = trie;
-
-        for (i = 0; i < filename.length; i += 1) {
-            key += filename[i];
-            if (!hash.hasOwnProperty(key)) {
-                hash[key] = {};
-            }
-            hash = hash[key];
-
-            if (i === filename.length - 1 && isLastPart) {
-                hash['fullFileName'] = fullFileName;
-            }
-        }
-
-    }
-
-    add(filename, filename, true);
-    parts = filename.split('/');
-    parts.forEach(function(part, i) {
-        add(part, filename, i === (parts.length - 1));
-    });
-}
-
-function getKeys(hash) {
-    var ret = [];
-    var key = '';
-
-    for (key in hash) {
-        if (hash.hasOwnProperty(key)) {
-            if (typeof(hash[key]) === 'string') {
-                ret.push(hash[key]);
-            } else {
-                ret = ret.concat(getKeys(hash[key]));
-            }
-        }
-    }
-
-    return ret;
-}
-
-function getAutoSuggestions(inputText) {
-    var i;
-    var key = '';
-    var hash = trie;
-
-    for (i = 0; i < inputText.length; i += 1) {
-        key += inputText[i];
-        hash = hash[key];
-        if (i === inputText.length - 1) {
-            return getKeys(hash);
-        }
-    }
-}
-
 function createFileListView(file, lineno, clickCallback) {
     var li = document.createElement('li');
     var titleSpan = document.createElement('span');
@@ -287,33 +230,4 @@ function createFileListView(file, lineno, clickCallback) {
     li.onclick = clickCallback || onFileClicked;
 
     return li;
-}
-
-function loadFiles() {
-    var xhr = new XMLHttpRequest();
-    var url = HOST + '/files';
-
-    if (ignoredExtensions) {
-        url = HOST + '/files?ignored_extensions=' + ignoredExtensions.join(',');
-    }
-
-    xhr.open("GET", url);
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            if (xhr.responseText) {
-                var json = JSON.parse(xhr.responseText);
-                json.forEach(function(filename, i) {
-                    makeAutoSuggestable(filename);
-                });
-            }
-            Storage.get('previouslyOpenedFile', null, function(previouslyOpenedFile) {
-                if (previouslyOpenedFile) {
-                    openFile(previouslyOpenedFile);
-                }
-            });
-        }
-    };
-
-    xhr.send();
 }

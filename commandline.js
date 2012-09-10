@@ -170,7 +170,7 @@ var CommandLine = {
     },
 
     getAutoCompleteSuggestions: function(s) {
-        this.fillSuggestionsList(getAutoSuggestions(s));
+        this.fillSuggestionsList(ProjectFiles.getAutoSuggestions(s));
     },
 
     grep: function(q) {
