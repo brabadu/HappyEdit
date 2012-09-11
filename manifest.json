@@ -11,7 +11,11 @@
     "permissions": [
         "experimental",
         "storage",
-        "app.window"
+        "app.window",
+        "clipboardRead",
+        "clipboardWrite",
+        "fileSystem",
+        "fileSystemWrite"
     ],
     "icons": {
         "16": "logo_16x16.png",

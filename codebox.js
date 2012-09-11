@@ -72,6 +72,18 @@ window.onload = function() {
     });
 
     editor.commands.addCommand({
+        name: "open suggestions",
+        bindKey: {
+            win: "Ctrl-T",
+            mac: "Command-T",
+            sender: "editor"
+        },
+        exec: function() {
+            CommandLine.show('');
+        }
+    });
+
+    editor.commands.addCommand({
         name: "open file",
         bindKey: {
             win: "Ctrl-O",
@@ -79,7 +91,7 @@ window.onload = function() {
             sender: "editor"
         },
         exec: function() {
-            CommandLine.show('');
+            openLocalFile();
         }
     });
 
@@ -172,6 +184,33 @@ function openFile(filename, lineNumber) {
         });
     };
     xhr.send();
+}
+
+function openLocalFile() {
+    chrome.fileSystem.chooseFile(function (entry) {
+        if (chrome.runtime.lastError) {
+            console.log(chrome.runtime.lastError.message);
+            return;
+        }
+        console.log('file entry selected', entry.name);
+        entry.file(function(f) {
+            console.log('reading file contents');
+            var reader = new FileReader();
+            reader.onload = function() {
+                console.log('file contents read', reader);
+                var file;
+                if (window.files.hasOwnProperty(entry.name)) {
+                    file = window.files[entry.name];
+                } else {
+                    file = new EditorFile(entry.name, reader.result);
+                    files[entry.name] = file;
+                }
+                window.currentFile = file;
+                editor.setSession(file.getSession());
+            };
+            reader.readAsText(f);
+        });
+    });
 }
 
 function createFileListView(file, lineno, clickCallback) {
