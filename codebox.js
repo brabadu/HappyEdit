@@ -170,12 +170,13 @@ function openFile(filename, lineNumber) {
             });
             */
 
+            editor.setSession(file.getSession());
+            TopBar.setTitle(file.name);
+
             if (lineNumber) {
                 editor.gotoLine(lineNumber);
                 editor.scrollToLine(lineNumber);
             }
-            editor.setSession(file.getSession());
-            TopBar.setTitle(filename);
         }
 
         Storage.set('previouslyOpenedFile', filename, function() {
@@ -186,29 +187,29 @@ function openFile(filename, lineNumber) {
 }
 
 function openLocalFile() {
-    chrome.fileSystem.chooseFile(function (entry) {
+    chrome.fileSystem.chooseFile(function(fileEntry) {
         if (chrome.runtime.lastError) {
             console.log(chrome.runtime.lastError.message);
             return;
         }
-        console.log('file entry selected', entry.name);
-        entry.file(function(f) {
+        console.log('file entry selected', fileEntry.name);
+        fileEntry.file(function(f) {
             console.log('reading file contents');
             var reader = new FileReader();
             reader.onload = function() {
                 console.log('file contents read', reader);
                 var file;
-                if (window.files.hasOwnProperty(entry.name)) {
-                    file = window.files[entry.name];
+                if (window.files.hasOwnProperty(fileEntry.name)) {
+                    file = window.files[fileEntry.name];
                 } else {
-                    file = new LocalFile(entry.name, reader.result);
-                    files[entry.name] = file;
+                    file = new LocalFile(fileEntry, reader.result);
+                    files[fileEntry.name] = file;
                 }
                 window.currentFile = file;
                 editor.setSession(file.getSession());
+                TopBar.setTitle(file.name);
             };
             reader.readAsText(f);
-            TopBar.setTitle(filename);
         });
     });
 }

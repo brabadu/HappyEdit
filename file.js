@@ -46,8 +46,26 @@ RemoteFile.constructor = RemoteFile;
 /**
  * LocalFile
  */
-function LocalFile(name, body) {
-    AbstractFile.call(this, name, body);
+function LocalFile(fileEntry, body) {
+    AbstractFile.call(this, fileEntry.name, body);
+    this.fileEntry = fileEntry;
+    this.save = function() {
+        var self = this;
+        document.querySelector('#notification').style.visibility = 'visible';
+        chrome.fileSystem.getWritableFileEntry(self.fileEntry, function(fileEntry) {
+            fileEntry.createWriter(function(fileWriter) {
+                fileWriter.onwriteend = function(e) {
+                    document.querySelector('#notification').style.visibility = 'hidden';
+                    console.log('writing ended');
+                    if (this.error) {
+                        console.log('Error during write: ' + this.error.toString(), this.error);
+                    }
+                };
+                var blob = new Blob([self.session.getValue()], {type: 'text/plain'});
+                fileWriter.write(blob);
+            });
+        });
+    };
 };
 
 LocalFile.prototype = new AbstractFile();
