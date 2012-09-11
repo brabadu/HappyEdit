@@ -154,11 +154,16 @@ var CommandLine = {
     fillSuggestionsList: function(suggestions) {
         var self = this;
         var fragment = document.createDocumentFragment();
-        var li;
 
-        var onFileClick = function() {
+        var onClick = function() {
             self.hide();
-            fileClicked(this);
+            var filename = this.getAttribute('rel');
+            if (window.files.hasOwnProperty(filename)) {
+                window.switchToFile(file);
+            } else {
+                window.openRemoteFile(filename)
+            }
+            var file = window.files[filename];
         };
 
         self.clearSuggestions();
@@ -166,14 +171,14 @@ var CommandLine = {
         if (suggestions.length) {
             suggestions.forEach(function(file, i) {
                 var filename;
-                var lineNumber;
+                var li;
                 if (file instanceof Object) {
                     filename = file.filename;
-                    lineNumber = file.lineno;
                 } else {
                     filename = file;
                 }
-                li = createFileListView(filename, lineNumber, onFileClick);
+                li = HTML.createSuggestionView(filename);
+                li.onclick = onClick;
                 fragment.appendChild(li);
                 self.suggestionElements.push(li);
             });

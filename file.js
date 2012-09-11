@@ -4,10 +4,18 @@ var EditSession = require('ace/edit_session').EditSession;
  * AbstractFile
  */
 function AbstractFile(name, body) {
+    var self = this;
+
     this.name = name;
     this.session = new EditSession(body);
     this.session.setMode(getModeForFile(name));
     this.session.setUndoManager(new UndoManager());
+    this.modified = false;
+
+    this.session.getDocument().on('change', function(event) {
+        self.modified = self.session.getUndoManager().$undoStack.length !== 0;
+    });
+
     this.getSession = function() {
         return this.session;
     };

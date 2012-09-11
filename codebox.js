@@ -11,7 +11,6 @@ var Mode = function(name, desc, clazz, extensions) {
     this.clazz = clazz;
     this.mode = new clazz();
     this.mode.name = name;
-    
     this.extRe = new RegExp("^.*\\.(" + extensions.join("|") + ")$", "g");
 };
 
@@ -27,10 +26,9 @@ var modes = [
     new Mode("json", "JSON", require("ace/mode/json").Mode, ["json"]),
     new Mode("python", "Python", require("ace/mode/python").Mode, ["py"]),
     new Mode("php", "PHP",require("ace/mode/php").Mode, ["php"]),
-    new Mode("text", "Text", require("ace/mode/text").Mode, ["txt"])
+    new Mode("text", "Text", require("ace/mode/text").Mode, ["txt"]),
+    new Mode("diff", "Diff", require("ace/mode/diff").Mode, ["diff"])
 ];
-
-var diffMode = new Mode("diff", "Diff", require("ace/mode/diff").Mode, ["diff"]);
 
 function updateSize() {
     var w = window.innerWidth;
@@ -130,18 +128,10 @@ function getModeForFile(filename) {
     return mode.mode;
 }
 
-function onFileClicked(event) {
-    fileClicked(this);
-}
-
-function fileClicked(elem) {
-    var filename = elem.getAttribute('rel');
-    var lineNumberSpan = elem.querySelector('.lineno');
-    var lineNumber = null;
-    if (lineNumberSpan) {
-        var lineNumber = lineNumberSpan.innerHTML;
-    }
-    openRemoteFile(filename, lineNumber)
+function switchToFile(file) {
+    window.currentFile = file;
+    window.editor.setSession(file.getSession());
+    TopBar.updateView(file);
 }
 
 function getOrLoadRemoteFile(filename, callback) {
@@ -164,20 +154,11 @@ function getOrLoadRemoteFile(filename, callback) {
     xhr.send();
 }
 
-function openRemoteFile(filename, lineNumber) {
+function openRemoteFile(filename) {
     var file;
 
     getOrLoadRemoteFile(filename, function(file) {
-        window.currentFile = file;
-
-        editor.setSession(file.getSession());
-        TopBar.updateView(file);
-
-        if (lineNumber) {
-            editor.gotoLine(lineNumber);
-            editor.scrollToLine(lineNumber);
-        }
-
+        window.switchToFile(file);
         Storage.set('previouslyOpenedFile', filename, function() {
             console.log('filename (hopefully) set in storage');
         });
@@ -190,12 +171,9 @@ function openLocalFile() {
             console.log(chrome.runtime.lastError.message);
             return;
         }
-        console.log('file entry selected', fileEntry.name);
         fileEntry.file(function(f) {
-            console.log('reading file contents');
             var reader = new FileReader();
             reader.onload = function() {
-                console.log('file contents read', reader);
                 var file;
                 if (window.files.hasOwnProperty(fileEntry.name)) {
                     file = window.files[fileEntry.name];
@@ -203,33 +181,10 @@ function openLocalFile() {
                     file = new LocalFile(fileEntry, reader.result);
                     files[fileEntry.name] = file;
                 }
-                window.currentFile = file;
-                editor.setSession(file.getSession());
-                TopBar.updateView(file);
+                window.switchToFile(file);
             };
             reader.readAsText(f);
         });
     });
 }
 
-function createFileListView(file, lineno, clickCallback) {
-    var li = document.createElement('li');
-    var titleSpan = document.createElement('span');
-
-    titleSpan.setAttribute('class', 'title');
-    titleSpan.innerHTML = capFileName(file, 50);
-    li.setAttribute('rel', file);
-    li.appendChild(titleSpan);
-
-    if (lineno) {
-        var lineNumberSpan = document.createElement('span');
-        lineNumberSpan.setAttribute('class', 'lineno');
-        lineNumberSpan.innerHTML = lineno;
-        li.appendChild(lineNumberSpan);
-    }
-
-    li.setAttribute('title', file);
-    li.onclick = clickCallback || onFileClicked;
-
-    return li;
-}
