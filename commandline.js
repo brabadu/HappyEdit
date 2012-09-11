@@ -41,23 +41,39 @@ var CommandLine = {
 
     init: function() {
         var self = this;
+        var runKeyUpHandler = false;
         self.$popup = document.querySelector('.popup.command-line');
         self.$input = document.querySelector('.popup.command-line input');
         self.$suggestions= document.querySelector('.popup.command-line ul');
         self.$blocker = document.querySelector('#blocker');
 
-        self.$input.onkeyup= function(event) {
-            if (event.keyCode === 27) {
+        self.$input.onkeydown = function(event) {
+            keyCode = event.keyCode;
+
+            if (event.ctrlKey && keyCode === 78 || keyCode === 74) {
+                keyCode = 40;
+            } else if (event.ctrlKey && keyCode === 80 || keyCode === 75) {
+                keyCode = 38;
+            }
+
+            switch (keyCode) {
+                case 27:
                 self.hide();
-            } else if (event.ctrlKey && event.keyCode === 78) {
+                break;
+
+                case 40:
                 self.navigateSuggestionDown();
-                event.stopPropagation();
-            } else if (event.ctrlKey && event.keyCode === 80) {
+                break;
+
+                case 38:
                 self.navigateSuggestionUp();
-                event.stopPropagation();
-            } else if (event.keyCode === 17) {
+                break;
+
+                case 17:
                 // do nothing, it was just the ctrl key lifted up
-            } else if (event.keyCode === 13) {
+                break;
+
+                case 13:
                 if (this.value[0] === ":") {
                     var cmd = this.value.split(":")[1];
                     var split = cmd.split(' ');
@@ -80,7 +96,20 @@ var CommandLine = {
                 } else {
                     self.openSelectedSuggestion();
                 }
-            } else if (this.value[0] !== ':' && this.value[0] !== '/' && this.value[0] !== '?') {
+                break;
+
+                default:
+                runKeyUpHandler = true;
+            }
+        };
+
+        self.$input.onkeyup = function(event) {
+            if (!runKeyUpHandler) {
+                return;
+            }
+            runKeyUpHandler = false;
+
+            if (this.value[0] !== ':' && this.value[0] !== '/' && this.value[0] !== '?') {
                 if (this.value === '') {
                     self.showOpenBuffers();
                 } else {
