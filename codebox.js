@@ -1,4 +1,3 @@
-var EditSession = require('ace/edit_session').EditSession;
 var UndoManager = require('ace/undomanager').UndoManager;
 var files = {};
 var editor;
@@ -148,7 +147,6 @@ function fileClicked(elem) {
 function openFile(filename, lineNumber) {
     var xhr = new XMLHttpRequest();
     var url = HOST + '/files/' + filename;
-    TopBar.setTitle(filename);
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -157,7 +155,7 @@ function openFile(filename, lineNumber) {
             if (window.files.hasOwnProperty(filename)) {
                 file = window.files[filename];
             } else {
-                file = new EditorFile(filename, xhr.responseText);
+                file = new RemoteFile(filename, xhr.responseText);
                 files[filename] = file;
             }
 
@@ -177,6 +175,7 @@ function openFile(filename, lineNumber) {
                 editor.scrollToLine(lineNumber);
             }
             editor.setSession(file.getSession());
+            TopBar.setTitle(filename);
         }
 
         Storage.set('previouslyOpenedFile', filename, function() {
@@ -202,13 +201,14 @@ function openLocalFile() {
                 if (window.files.hasOwnProperty(entry.name)) {
                     file = window.files[entry.name];
                 } else {
-                    file = new EditorFile(entry.name, reader.result);
+                    file = new LocalFile(entry.name, reader.result);
                     files[entry.name] = file;
                 }
                 window.currentFile = file;
                 editor.setSession(file.getSession());
             };
             reader.readAsText(f);
+            TopBar.setTitle(filename);
         });
     });
 }
