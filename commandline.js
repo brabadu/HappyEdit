@@ -13,6 +13,12 @@ var CommandLine = {
                 window.currentFile.save();
             }
         },
+        "q": {
+            hideCommandLine: true,
+            fn: function(args) {
+                window.close();
+            }
+        },
         "e": {
             hideCommandLine: true,
             fn: function(args) {
