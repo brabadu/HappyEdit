@@ -50,9 +50,9 @@ var CommandLine = {
         self.$input.onkeydown = function(event) {
             keyCode = event.keyCode;
 
-            if (event.ctrlKey && keyCode === 78 || keyCode === 74) {
+            if (event.ctrlKey && (keyCode === 78 || keyCode === 74)) {
                 keyCode = 40;
-            } else if (event.ctrlKey && keyCode === 80 || keyCode === 75) {
+            } else if (event.ctrlKey && (keyCode === 80 || keyCode === 75)) {
                 keyCode = 38;
             }
 
