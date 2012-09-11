@@ -10,7 +10,7 @@ var CommandLine = {
         "w": {
             hideCommandLine: true,
             fn: function(args) {
-                save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
+                window.currentFile.save();
             }
         },
         "e": {
@@ -189,8 +189,8 @@ var CommandLine = {
         var filename;
         var filenames = [];
 
-        for (filename in window.sessions) {
-            if (window.sessions.hasOwnProperty(filename)) {
+        for (filename in window.files) {
+            if (window.files.hasOwnProperty(filename)) {
                 filenames.push(filename);
             }
         }

@@ -1,9 +1,9 @@
 var EditSession = require('ace/edit_session').EditSession;
 var UndoManager = require('ace/undomanager').UndoManager;
-var sessions = {};
+var files = {};
 var editor;
 var editorElement;
-var currentlySelectedFilename;
+var currentFile;
 var HOST = 'http://localhost:8888';
 
 var Mode = function(name, desc, clazz, extensions) {
@@ -32,37 +32,6 @@ var modes = [
 ];
 
 var diffMode = new Mode("diff", "Diff", require("ace/mode/diff").Mode, ["diff"]);
-
-function getLinesInCurrentBuffer() {
-    return editor.getSession().getValue();
-}
-
-function getCurrentlySelectedFileName() {
-    if (!currentlySelectedFilename) {
-        throw "currentlySelectedFilename is not set";
-    }
-    return currentlySelectedFilename;
-}
-
-function save(fileName, lines) {
-    var xhr = new XMLHttpRequest();
-    var url = HOST + '/files/' + encodeURIComponent(fileName);
-    var params = 'body=' + encodeURIComponent(lines);
-    xhr.open("POST", url);
-    document.querySelector('#notification').style.visibility = 'visible';
-
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            document.querySelector('#notification').style.visibility = 'hidden';
-            console.log(xhr.responseText);
-            editor.getSession().getUndoManager().reset();
-        }
-    };
-
-    xhr.send(params);
-}
 
 function updateSize() {
     var w = window.innerWidth;
@@ -98,7 +67,7 @@ window.onload = function() {
             sender: "editor"
         },
         exec: function() {
-            save(getCurrentlySelectedFileName(), getLinesInCurrentBuffer());
+            window.currentFile.save();
         }
     });
 
@@ -150,13 +119,6 @@ function getModeForFile(filename) {
     return mode.mode;
 }
 
-function createSessionForFile(filename, body) {
-    var session = new EditSession(body);
-    session.setMode(getModeForFile(filename));
-    session.setUndoManager(new UndoManager());
-    return session;
-}
-
 function onFileClicked(event) {
     fileClicked(this);
 }
@@ -174,18 +136,20 @@ function fileClicked(elem) {
 function openFile(filename, lineNumber) {
     var xhr = new XMLHttpRequest();
     var url = HOST + '/files/' + filename;
-    window.currentlySelectedFilename = filename;
     TopBar.setTitle(filename);
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
-            var session;
-            if (sessions.hasOwnProperty(filename)) {
-                session = sessions[filename];
+            var file;
+            
+            if (window.files.hasOwnProperty(filename)) {
+                file = window.files[filename];
             } else {
-                session = createSessionForFile(filename, xhr.responseText);
-                sessions[filename] = session;
+                file = new EditorFile(filename, xhr.responseText);
+                files[filename] = file;
             }
+
+            window.currentFile = file;
 
             /*
             session.getDocument().on('change', function(event) {
@@ -200,7 +164,7 @@ function openFile(filename, lineNumber) {
                 editor.gotoLine(lineNumber);
                 editor.scrollToLine(lineNumber);
             }
-            editor.setSession(session);
+            editor.setSession(file.getSession());
         }
 
         Storage.set('previouslyOpenedFile', filename, function() {
