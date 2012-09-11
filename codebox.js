@@ -171,7 +171,7 @@ function openFile(filename, lineNumber) {
             */
 
             editor.setSession(file.getSession());
-            TopBar.setTitle(file.name);
+            TopBar.updateView(file);
 
             if (lineNumber) {
                 editor.gotoLine(lineNumber);
@@ -207,7 +207,7 @@ function openLocalFile() {
                 }
                 window.currentFile = file;
                 editor.setSession(file.getSession());
-                TopBar.setTitle(file.name);
+                TopBar.updateView(file);
             };
             reader.readAsText(f);
         });

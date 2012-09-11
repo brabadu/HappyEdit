@@ -66,6 +66,9 @@ function LocalFile(fileEntry, body) {
             });
         });
     };
+    this.getDisplayPath = function(callback) {
+        chrome.fileSystem.getDisplayPath(this.fileEntry, callback);
+    };
 };
 
 LocalFile.prototype = new AbstractFile();
