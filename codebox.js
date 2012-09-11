@@ -114,7 +114,7 @@ window.onload = function() {
 
     Storage.get('previouslyOpenedFile', null, function(previouslyOpenedFile) {
         if (previouslyOpenedFile) {
-            openFile(previouslyOpenedFile);
+            openRemoteFile(previouslyOpenedFile);
         }
     });
 };
@@ -141,49 +141,47 @@ function fileClicked(elem) {
     if (lineNumberSpan) {
         var lineNumber = lineNumberSpan.innerHTML;
     }
-    openFile(filename, lineNumber)
+    openRemoteFile(filename, lineNumber)
 }
 
-function openFile(filename, lineNumber) {
+function getOrLoadRemoteFile(filename, callback) {
+    if (window.files.hasOwnProperty(filename)) {
+        callback(window.files[filename]);
+        return;
+    }
+
     var xhr = new XMLHttpRequest();
     var url = HOST + '/files/' + filename;
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
+        var file;
         if (xhr.readyState == 4) {
-            var file;
-            
-            if (window.files.hasOwnProperty(filename)) {
-                file = window.files[filename];
-            } else {
-                file = new RemoteFile(filename, xhr.responseText);
-                files[filename] = file;
-            }
+            file = new RemoteFile(filename, xhr.responseText);
+            files[filename] = file;
+            callback(file);
+        }
+    };
+    xhr.send();
+}
 
-            window.currentFile = file;
+function openRemoteFile(filename, lineNumber) {
+    var file;
 
-            /*
-            session.getDocument().on('change', function(event) {
-                addClass(elem, 'modified');
-                if (session.getUndoManager().$undoStack.length === 0) {
-                    removeClass(elem, 'modified');
-                }
-            });
-            */
+    getOrLoadRemoteFile(filename, function(file) {
+        window.currentFile = file;
 
-            editor.setSession(file.getSession());
-            TopBar.updateView(file);
+        editor.setSession(file.getSession());
+        TopBar.updateView(file);
 
-            if (lineNumber) {
-                editor.gotoLine(lineNumber);
-                editor.scrollToLine(lineNumber);
-            }
+        if (lineNumber) {
+            editor.gotoLine(lineNumber);
+            editor.scrollToLine(lineNumber);
         }
 
         Storage.set('previouslyOpenedFile', filename, function() {
             console.log('filename (hopefully) set in storage');
         });
-    };
-    xhr.send();
+    });
 }
 
 function openLocalFile() {

@@ -18,7 +18,7 @@ var CommandLine = {
             fn: function(args) {
                 var filename = args.join(' ');
                 if (filename) {
-                    openFile(filename);
+                    openRemoteFile(filename);
                 } else {
                     throw "Bad filename";
                 }
