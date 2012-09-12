@@ -280,6 +280,8 @@ var CommandLine = {
             editor.blur();
             self.$input.focus();
         }, 100);
+
+        TopBar.fadeIn();
     },
 
     hide: function() {
@@ -287,5 +289,6 @@ var CommandLine = {
         self.$popup.style.display = 'none';
         self.$blocker.style.display = 'none';
         editor.focus();
+        TopBar.fadeOut();
     }
 }

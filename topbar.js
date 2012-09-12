@@ -12,9 +12,30 @@ var TopBar = {
         self.$title = self.$view.querySelector('.title');
         self.$type = self.$view.querySelector('.type');
 
+        (function() {
+            var timeout;
+            window.onmousemove = function() {
+                if (timeout) {
+                    clearTimeout(timeout);
+                }
+                self.fadeIn();
+                timeout = setTimeout(function() {
+                    self.fadeOut();
+                }, 2000);
+            }
+        }());
+
         self.$closeButton.onclick = function() {
             window.close();
         }
+    },
+
+    fadeIn: function() {
+        addClass(this.$view, 'show-ui');
+    },
+
+    fadeOut: function() {
+        removeClass(this.$view, 'show-ui');
     },
 
     updateView: function(file) {

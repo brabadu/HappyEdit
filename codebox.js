@@ -32,8 +32,7 @@ var modes = [
 
 function updateSize() {
     var w = window.innerWidth;
-    var h = window.innerHeight - document.querySelector('#top').offsetHeight;
-
+    var h = window.innerHeight;
     editorElement.style.width = w + 'px';
     editorElement.style.height = h + 'px';
 }
