@@ -165,7 +165,7 @@ var CommandLine = {
             self.hide();
             var filename = this.getAttribute('rel');
             if (window.files.hasOwnProperty(filename)) {
-                window.switchToFile(file);
+                window.switchToFile(window.files[filename]);
             } else {
                 window.openRemoteFile(filename)
             }
