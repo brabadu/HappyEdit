@@ -123,10 +123,11 @@ body {
     -webkit-widget-region: region(control rectangle);
 }
 #top {
-    padding: 5px 10px;
+    padding: 0 10px;
+    height: 25px;
+    font-size: 13px;
     text-align: center;
-    color: #666;
-    font-size: 14px;
+    color: #333;
     text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.8);
     background:-webkit-linear-gradient(top, #EEE 0%, #CCC 100%);
     background:-moz-linear-gradient(top, #EEE 0%, #CCC 100%);
@@ -138,16 +139,14 @@ body {
     -webkit-user-select: none;
 }
 #top > * {
-    line-height: 17px;
-}
-#top .title {
+    line-height: 25px;
+    vertical-align: middle;
     display: inline-block;
-}
-#top .type {
-    display: inline-block;
-    font-size: 11px;
 }
 #top .close-button {
     cursor: pointer;
     float: right;
+}
+#top .close-button:hover {
+    color: rgb(195, 25, 25);
 }
