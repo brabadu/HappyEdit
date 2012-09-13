@@ -80,6 +80,7 @@ var CommandLine = {
                 break;
 
                 case 9: // Tab
+                self.enterTextFromFirstSuggestion();
                 event.preventDefault();
                 break;
 
@@ -128,6 +129,14 @@ var CommandLine = {
             } else {
                 self.clearSuggestions();
             }
+        }
+    },
+
+    enterTextFromFirstSuggestion: function() {
+        if (this.suggestionElements) {
+            var $elem = this.suggestionElements[this.selectedSuggestionIndex];
+            var title = $elem.querySelector('.title').innerHTML;
+            this.$input.value = title;
         }
     },
 
