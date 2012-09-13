@@ -79,6 +79,10 @@ var CommandLine = {
                 // do nothing, it was just the ctrl key lifted up
                 break;
 
+                case 9: // Tab
+                event.preventDefault();
+                break;
+
                 case 13:
                 if (this.value[0] === ":") {
                     var cmd = this.value.split(":")[1];
