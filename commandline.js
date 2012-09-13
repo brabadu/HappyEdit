@@ -91,27 +91,10 @@ var CommandLine = {
                 break;
 
                 case 13:
-                if (this.value[0] === ":") {
-                    var cmd = this.value.split(":")[1];
-                    var split = cmd.split(' ');
-                    var cmd = split.splice(0, 1);
-                    var args = split;
-                    if (isNumeric(cmd)) {
-                        editor.gotoLine(cmd);
-                        self.hide();
-                    } else {
-                        self.runCommand(cmd, args);
-                    }
-                } else if (this.value[0] === "/") {
-                    var needle = this.value.split('/')[1];
-                    editor.find(needle);
-                    self.hide();
-                } else if (this.value[0] === "?") {
-                    var needle = this.value.split('?')[1];
-                    editor.findPrevious(needle);
-                    self.hide();
-                } else {
+                if (self.hasSuggestions()) {
                     self.openSelectedSuggestion();
+                } else {
+                    self.executeCommand(this.value);
                 }
                 break;
 
@@ -132,6 +115,10 @@ var CommandLine = {
                 self.clearSuggestions();
             }
         }
+    },
+
+    hasSuggestions: function() {
+        return Boolean(this.suggestionElements && this.suggestionElements.length);
     },
 
     enterTextFromFirstSuggestion: function() {
@@ -191,7 +178,7 @@ var CommandLine = {
 
         self.clearSuggestions();
 
-        if (suggestions.length) {
+        if (suggestions && suggestions.length) {
             suggestions.forEach(function(file, i) {
                 var filename;
                 var li;
@@ -257,6 +244,32 @@ var CommandLine = {
         };
 
         xhr.send();
+    },
+
+    executeCommand: function(value) {
+        var self = this;
+        if (value[0] === ":") {
+            var cmd = value.split(":")[1];
+            var split = cmd.split(' ');
+            var cmd = split.splice(0, 1);
+            var args = split;
+            if (isNumeric(cmd)) {
+                editor.gotoLine(cmd);
+                self.hide();
+            } else {
+                self.runCommand(cmd, args);
+            }
+        } else if (value[0] === "/") {
+            var needle = value.split('/')[1];
+            editor.find(needle);
+            self.hide();
+        } else if (value[0] === "?") {
+            var needle = value.split('?')[1];
+            editor.findPrevious(needle);
+            self.hide();
+        } else {
+            self.openSelectedSuggestion();
+        }
     },
 
     runCommand: function(cmd, args) {
