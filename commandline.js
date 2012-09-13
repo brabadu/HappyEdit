@@ -131,23 +131,20 @@ var CommandLine = {
         }
     },
 
-    navigateSuggestionDown: function() {
-        if (this.selectedSuggestionIndex === null) {
-            this.selectedSuggestionIndex = 0;
-            addClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
-        } else if (this.selectedSuggestionIndex < this.suggestionElements.length - 1) {
+    selectSuggestion: function(newIndex) {
+        if (this.selectedSuggestionIndex !== null) {
             removeClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
-            this.selectedSuggestionIndex += 1;
-            addClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
         }
+        this.selectedSuggestionIndex = newIndex;
+        addClass(this.suggestionElements[newIndex], 'hover');
+    },
+
+    navigateSuggestionDown: function() {
+        this.selectSuggestion((this.selectedSuggestionIndex || 0) + 1);
     },
 
     navigateSuggestionUp: function() {
-        if (this.selectedSuggestionIndex !== null && this.selectedSuggestionIndex > 0) {
-            removeClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
-            this.selectedSuggestionIndex -= 1;
-            addClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
-        }
+        this.selectSuggestion((this.selectedSuggestionIndex || 0) - 1);
     },
 
     openSelectedSuggestion: function() {
@@ -194,6 +191,7 @@ var CommandLine = {
             });
             self.$suggestions.appendChild(fragment);
             self.$suggestions.style.display = 'block';
+            self.selectSuggestion(0);
         } else {
             self.$suggestions.style.display = 'none';
         }
