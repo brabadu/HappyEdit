@@ -31,5 +31,5 @@ var ProjectFiles = {
     
     getSuggestions: function(q) {
         return this.autoSuggestList.getSuggestions(q);
-    },
+    }
 };
