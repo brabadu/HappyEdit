@@ -132,6 +132,11 @@ var CommandLine = {
     },
 
     selectSuggestion: function(newIndex) {
+        if (newIndex >= this.suggestionElements.length) {
+            newIndex = 0;
+        } else if (newIndex < 0) {
+            newIndex = this.suggestionElements.length - 1;
+        }
         if (this.selectedSuggestionIndex !== null) {
             removeClass(this.suggestionElements[this.selectedSuggestionIndex], 'hover');
         }
