@@ -30,6 +30,12 @@ var CommandLine = {
                 }
             }
         },
+        "ls": {
+            hideCommandLine: false,
+            fn: function(args) {
+                CommandLine.showOpenBuffers();
+            }
+        },
         "settings": {
             hideCommandLine: true,
             fn: function(args) {
@@ -121,11 +127,7 @@ var CommandLine = {
             runKeyUpHandler = false;
 
             if (this.value[0] !== ':' && this.value[0] !== '/' && this.value[0] !== '?') {
-                if (this.value === '') {
-                    self.showOpenBuffers();
-                } else {
-                    self.getAutoCompleteSuggestions(this.value);
-                }
+                self.getAutoCompleteSuggestions(this.value);
             } else {
                 self.clearSuggestions();
             }
@@ -286,10 +288,6 @@ var CommandLine = {
         self.$suggestions.style.display = 'none';
         self.$popup.style.display = 'block';
         self.$blocker.style.display = 'block';
-
-        if (startingChar === '') {
-            self.showOpenBuffers();
-        }
 
         // Focusing on text input right away does not work for some reason.
         setTimeout(function() {
