@@ -1,4 +1,5 @@
 var EditSession = require('ace/edit_session').EditSession;
+var UndoManager = require('ace/undomanager').UndoManager;
 
 /**
  * AbstractFile
@@ -7,8 +8,8 @@ function AbstractFile(name, body) {
     var self = this;
 
     this.name = name;
-    this.session = new EditSession(body);
-    this.session.setMode(getModeForFile(name));
+    this.session = new EditSession(body || '');
+    this.session.setMode(window.getModeForFile(name));
     this.session.setUndoManager(new UndoManager());
     this.modified = false;
 

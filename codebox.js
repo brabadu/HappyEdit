@@ -1,4 +1,3 @@
-var UndoManager = require('ace/undomanager').UndoManager;
 var files = {};
 var editor;
 var editorElement;
@@ -81,6 +80,30 @@ window.onload = function() {
     });
 
     editor.commands.addCommand({
+        name: "next tab",
+        bindKey: {
+            win: "Ctrl-Tab",
+            mac: "Command-Shift-]",
+            sender: "editor"
+        },
+        exec: function() {
+            TopBar.nextTab();
+        }
+    });
+
+    editor.commands.addCommand({
+        name: "prev tab",
+        bindKey: {
+            win: "Ctrl-Shift-Tab",
+            mac: "Command-Shift-[",
+            sender: "editor"
+        },
+        exec: function() {
+            TopBar.prevTab();
+        }
+    });
+
+    editor.commands.addCommand({
         name: "open file",
         bindKey: {
             win: "Ctrl-O",
@@ -128,10 +151,13 @@ function getModeForFile(filename) {
     return mode.mode;
 }
 
-function switchToFile(file) {
+function switchToFile(file, updateTabs) {
     window.currentFile = file;
     window.editor.setSession(file.getSession());
-    TopBar.updateView(file);
+
+    if (updateTabs || updateTabs === undefined) {
+        TopBar.updateView(file);
+    }
 }
 
 function getOrLoadRemoteFile(filename, callback) {
