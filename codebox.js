@@ -115,6 +115,18 @@ window.onload = function() {
         }
     });
 
+    editor.commands.addCommand({
+        name: "close file",
+        bindKey: {
+            win: "Ctrl-C",
+            mac: "Command-C",
+            sender: "editor"
+        },
+        exec: function() {
+            closeFile(window.currentFile);
+        }
+    });
+
     editor.getKeyboardHandler().actions[':'] = {
         fn: function(editor, range, count, param) {
             CommandLine.show(":");
@@ -157,6 +169,20 @@ function switchToFile(file, updateTabs) {
 
     if (updateTabs || updateTabs === undefined) {
         TopBar.updateView(file);
+    }
+}
+
+function getNumberOfOpenFiles() {
+    return TopBar.tabs.length;
+}
+
+function closeFile(file) {
+    if (getNumberOfOpenFiles() > 1) {
+        var tab = TopBar.getTabForFile(file);
+        tab.close(true);
+        delete files[currentFile.name];
+    } else {
+        window.close();
     }
 }
 

@@ -19,6 +19,21 @@ function Tab(file) {
         }
     };
 
+    this.close = function(selectClosestSibling) {
+        var i = TopBar.getIndexForTab(this);
+        if (selectClosestSibling) {
+            var closestSibling;
+            if (i === TopBar.tabs.length - 1) {
+                closestSibling = TopBar.tabs[i - 1];
+            } else {
+                closestSibling = TopBar.tabs[i + 1];
+            }
+            closestSibling.select();
+        }
+        TopBar.tabs.splice(i, 1);
+        TopBar.$tabs.removeChild(this.$view);
+    };
+
     this.$view.onclick = this.select;
 };
 

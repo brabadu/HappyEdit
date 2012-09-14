@@ -16,7 +16,7 @@ var CommandLine = {
         "q": {
             hideCommandLine: true,
             fn: function(args) {
-                window.close();
+                window.closeFile(window.currentFile);
             }
         },
         "e": {
