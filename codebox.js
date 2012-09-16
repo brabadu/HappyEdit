@@ -4,6 +4,12 @@ var editorElement;
 var currentFile;
 var HOST = 'http://localhost:8888';
 
+window.onkeydown = function(event) {
+    if (!CommandLine.isVisible()) {
+        window.editor.focus();
+    }
+};
+
 var Mode = function(name, desc, clazz, extensions) {
     this.name = name;
     this.desc = desc;
