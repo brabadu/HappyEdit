@@ -2,7 +2,8 @@ function Tab(file) {
     var self = this;
     this.file = file;
     this.$title = document.createElement('span');
-    this.$title.innerHTML = file.name;
+    this.$title.innerHTML = file.basename;
+    this.$title.setAttribute('title', file.displayPath);
     this.$view = document.createElement('li');
     this.$view.appendChild(this.$title);
 
