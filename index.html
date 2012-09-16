@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>CodeBox</title>
+        <meta charset="utf-8">
         <link href="/codebox.css" type="text/css" rel="stylesheet" />
         <script src="/ace/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
         <script src="/ace/build/src/keybinding-vim.js" type="text/javascript" charset="utf-8"></script>
@@ -43,7 +44,11 @@
         <span id="notification">Saving</span>
 
         <div id="top">
-            <span class="close-button">x</span>
+            <div class="controls">
+                <span class="close">x</span>
+                <span class="min">-</span>
+                <span class="max">+</span>
+            </div>
             <ul class="tabs"></ul>
         </div>
 

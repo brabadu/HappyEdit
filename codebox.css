@@ -145,16 +145,24 @@ body {
 #top .tabs li.selected:hover {
     background: white;
 }
-#top .close-button,
+#top .controls,
 #top .tabs li {
     line-height: 25px;
     vertical-align: middle;
     display: inline-block;
 }
-#top .close-button {
+#top .controls .span {
     cursor: pointer;
     margin-right: 10px;
+    line-height: 25px;
+    vertical-align: middle;
 }
-#top .close-button:hover {
+#top .close:hover {
     color: rgb(195, 25, 25);
+}
+#top .min:hover {
+    color: rgb(195, 195, 25);
+}
+#top .max:hover {
+    color: rgb(25, 195, 25);
 }

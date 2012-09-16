@@ -41,6 +41,8 @@ function Tab(file) {
 var TopBar = {
     $view: null,
     $closeButton: null,
+    $minButton: null,
+    $maxButton: null,
     $tabs: null,
     selectedTab: null,
     tabs: [],
@@ -49,11 +51,27 @@ var TopBar = {
         var self = this;
 
         self.$view = document.querySelector('#top');
-        self.$closeButton = self.$view.querySelector('.close-button');
+        self.$closeButton = self.$view.querySelector('.controls .close');
+        self.$minButton = self.$view.querySelector('.controls .min');
+        self.$maxButton = self.$view.querySelector('.controls .max');
         self.$tabs = self.$view.querySelector('.tabs');
 
         self.$closeButton.onclick = function() {
             window.close();
+        };
+
+        self.$minButton.onclick = function() {
+            chrome.app.window.current().minimize();
+        }
+
+        self.$maxButton.onclick = function() {
+            if (this.getAttribute('class') === 'restore') {
+                chrome.app.window.current().restore();
+                this.setAttribute('class', '');
+            } else {
+                chrome.app.window.current().maximize();
+                this.setAttribute('class', 'restore');
+            }
         }
     },
 
