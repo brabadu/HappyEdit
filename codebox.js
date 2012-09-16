@@ -118,8 +118,8 @@ window.onload = function() {
     editor.commands.addCommand({
         name: "closeFile",
         bindKey: {
-            win: "Ctrl-C",
-            mac: "Command-C",
+            win: "Ctrl-W",
+            mac: "Command-W",
             sender: "editor"
         },
         exec: function() {
