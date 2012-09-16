@@ -127,6 +127,28 @@ window.onload = function() {
         }
     });
 
+    for (var i = 1; i < 10; i += 1) {
+        (function() {
+            var keyNum = i;
+            editor.commands.addCommand({
+                name: "selectTab" + i,
+                bindKey: {
+                    win: "Ctrl-" + keyNum,
+                    mac: "Command-" + keyNum,
+                    sender: "editor"
+                },
+                exec: function() {
+                    var tabIndex = keyNum;
+                    if (tabIndex > TopBar.tabs.length) {
+                        tabIndex = TopBar.tabs.length;
+                    }
+                    tabIndex -= 1;
+                    TopBar.selectTabAtIndex(tabIndex);
+                }
+            });
+        }());
+    }
+
     editor.getKeyboardHandler().actions[':'] = {
         fn: function(editor, range, count, param) {
             CommandLine.show(":");
