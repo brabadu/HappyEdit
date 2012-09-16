@@ -68,7 +68,7 @@ window.onload = function() {
     });
 
     editor.commands.addCommand({
-        name: "open suggestions",
+        name: "commandT",
         bindKey: {
             win: "Ctrl-T",
             mac: "Command-T",
@@ -80,7 +80,7 @@ window.onload = function() {
     });
 
     editor.commands.addCommand({
-        name: "next tab",
+        name: "nextTab",
         bindKey: {
             win: "Ctrl-Tab",
             mac: "Command-Shift-]",
@@ -92,7 +92,7 @@ window.onload = function() {
     });
 
     editor.commands.addCommand({
-        name: "prev tab",
+        name: "prevTab",
         bindKey: {
             win: "Ctrl-Shift-Tab",
             mac: "Command-Shift-[",
@@ -104,7 +104,7 @@ window.onload = function() {
     });
 
     editor.commands.addCommand({
-        name: "open file",
+        name: "openFile",
         bindKey: {
             win: "Ctrl-O",
             mac: "Command-O",
@@ -116,7 +116,7 @@ window.onload = function() {
     });
 
     editor.commands.addCommand({
-        name: "close file",
+        name: "closeFile",
         bindKey: {
             win: "Ctrl-C",
             mac: "Command-C",
