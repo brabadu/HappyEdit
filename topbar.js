@@ -40,6 +40,7 @@ function Tab(file) {
 
 var TopBar = {
     $view: null,
+    $menuButton: null,
     $closeButton: null,
     $minButton: null,
     $maxButton: null,
@@ -51,10 +52,15 @@ var TopBar = {
         var self = this;
 
         self.$view = document.querySelector('#top');
+        self.$menuButton = self.$view.querySelector('.menu');
         self.$closeButton = self.$view.querySelector('.controls .close');
         self.$minButton = self.$view.querySelector('.controls .min');
         self.$maxButton = self.$view.querySelector('.controls .max');
         self.$tabs = self.$view.querySelector('.tabs');
+
+        self.$menuButton.onclick = function() {
+            // @TODO show menu
+        };
 
         self.$closeButton.onclick = function() {
             window.close();

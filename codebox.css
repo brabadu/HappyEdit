@@ -166,3 +166,14 @@ body {
 #top .max:hover {
     color: rgb(25, 195, 25);
 }
+#top .menu {
+    float: right;
+    cursor: pointer;
+    line-height: 25px;
+}
+#top .menu:after {
+    content: ' \25BE';
+    font-size: 16px;
+    color: #666;
+    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.8);
+}
