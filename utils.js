@@ -24,7 +24,7 @@ function capFileName(filename, max) {
         var split = filename.split('/');
         if (split.length > 1) {
             var last = split.pop();
-            ret = split.join('/').substring(0, max - split[1].length - 4) + '.../' + split[1];
+            ret = split.join('/').substring(0, max - split[1].length - 4) + '.../' + split[1] + last;
         } else {
             ret = filename.substring(0, max-3) + '...';
         }

@@ -161,36 +161,27 @@ var CommandLine = {
         this.$suggestions.style.display = 'none';
     },
 
+    fileSuggestionClickCallback: function() {
+        CommandLine.hide();
+        var filename = this.getAttribute('rel');
+        if (window.files.hasOwnProperty(filename)) {
+            window.switchToFile(window.files[filename]);
+        } else {
+            window.openRemoteFile(filename)
+        }
+    },
+
     fillSuggestionsList: function(suggestions) {
         var self = this;
         var fragment = document.createDocumentFragment();
 
-        var onClick = function() {
-            self.hide();
-            var filename = this.getAttribute('rel');
-            if (window.files.hasOwnProperty(filename)) {
-                window.switchToFile(window.files[filename]);
-            } else {
-                window.openRemoteFile(filename)
-            }
-            var file = window.files[filename];
-        };
-
         self.clearSuggestions();
 
         if (suggestions && suggestions.length) {
-            suggestions.forEach(function(file, i) {
-                var filename;
-                var li;
-                if (file instanceof Object) {
-                    filename = file.filename;
-                } else {
-                    filename = file;
-                }
-                li = HTML.createSuggestionView(filename);
-                li.onclick = onClick;
-                fragment.appendChild(li);
-                self.suggestionElements.push(li);
+            suggestions.forEach(function(suggestion, i) {
+                var $li = HTML.createSuggestionView(suggestion);
+                fragment.appendChild($li);
+                self.suggestionElements.push($li);
             });
             self.$suggestions.appendChild(fragment);
             self.$suggestions.style.display = 'block';
@@ -201,17 +192,21 @@ var CommandLine = {
     },
 
     showOpenBuffers: function() {
-        var self = this;
-        var filename;
-        var filenames = [];
-
-        for (filename in window.files) {
-            if (window.files.hasOwnProperty(filename)) {
-                filenames.push(filename);
+        var key;
+        var file;
+        var suggestions = [];
+        for (key in window.files) {
+            if (window.files.hasOwnProperty(key)) {
+                var file = window.files[key];
+                suggestions.push({
+                    title: file.basename,
+                    extra: file.displayPath,
+                    rel: file.displayPath,
+                    onclick: CommandLine.fileSuggestionClickCallback
+                });
             }
         }
-
-        self.fillSuggestionsList(filenames);
+        this.fillSuggestionsList(suggestions);
     },
 
     getAutoCompleteSuggestions: function(s) {

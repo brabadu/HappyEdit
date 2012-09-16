@@ -29,7 +29,25 @@ var ProjectFiles = {
         xhr.send();
     },
     
+    /**
+     * Gets a list of auto completions in the format expected by the
+     * CommandLine
+     */
     getSuggestions: function(q) {
-        return this.autoSuggestList.getSuggestions(q);
+        var suggestions = [];
+        var i;
+        var autoCompletions = this.autoSuggestList.getSuggestions(q);
+        var autoCompletion;
+        for (i = 0; i < autoCompletions.length; i += 1) {
+            autoCompletion = autoCompletions[i];
+            var split = autoCompletion.split(PATH_SEPARATOR);
+            suggestions.push({
+                title: split.pop(),
+                extra: capFileName(autoCompletion, 60 - HOST.length) + ' @ ' + HOST,
+                rel: autoCompletion,
+                onclick: CommandLine.fileSuggestionClickCallback
+            });
+        }
+        return suggestions;
     }
 };

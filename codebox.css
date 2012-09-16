@@ -91,6 +91,14 @@ body {
 .command-line li.hover {
     background: rgb(220, 220, 220);
 }
+.command-line li .title {
+    display: block;
+}
+.command-line li .extra {
+    display: block;
+    font-size: 11px;
+    color: #777
+}
 #editor {
     -webkit-widget-region: region(control rectangle);
 }
