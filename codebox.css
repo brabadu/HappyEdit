@@ -148,46 +148,40 @@ body {
 #top .tabs li.selected:hover {
     background: white;
 }
-#top .controls,
 #top .tabs li {
     line-height: 25px;
     vertical-align: middle;
     display: inline-block;
 }
 #top .controls {
+    display: inline-block;
     margin-right: 3px;
 }
 #top .controls div {
-    cursor: pointer;
     margin-right: 3px;
-    margin-top: 2px;
     vertical-align: top;
     display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 12px;
+    width: 10px;
+    height: 10px;
+    border-radius: 10px;
     background:-webkit-linear-gradient(top, #666 0%, #aaa 100%);
+    color: #eee;
+    line-height: 10px;
+    text-align: center;
+    font-size: 9px;
+    font-weight: bold;
+    text-shadow: 0px 1px 1px #333;
+    border: 1px solid #666
 }
-#top .controls span {
-    margin: 2px 0 0 2px;
-    display: block;
-    border-radius: 8px;
-    width: 8px;
-    height: 8px;
+#top .controls div:hover {
+    background: #aaa;
 }
-#top .close span {
-    background:-webkit-linear-gradient(top, #FFD2D2 0%, rgb(200, 0, 0) 30%, rgb(200, 0, 0) 70%, #FFD2D2 100%);
-}
-#top .min span {
-    background:-webkit-linear-gradient(top, #D2FFD2 0%, orange 30%, orange 70%, #D2FFD2 100%);
-}
-#top .max span {
-    background:-webkit-linear-gradient(top, #D2FFD2 0%, rgb(0, 200, 0) 30%, rgb(0, 200, 0) 70%, #D2FFD2 100%);
+#top .controls div:active {
+    background: #666
 }
 #top .menu {
     float: right;
     cursor: pointer;
-    line-height: 25px;
     vertical-align: bottom;
     margin-top: 3px;
 }
