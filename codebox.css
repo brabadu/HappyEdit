@@ -154,20 +154,35 @@ body {
     vertical-align: middle;
     display: inline-block;
 }
-#top .controls .span {
+#top .controls {
+    margin-right: 3px;
+}
+#top .controls div {
     cursor: pointer;
-    margin-right: 10px;
-    line-height: 25px;
-    vertical-align: middle;
+    margin-right: 3px;
+    margin-top: 2px;
+    vertical-align: top;
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 12px;
+    background:-webkit-linear-gradient(top, #666 0%, #aaa 100%);
 }
-#top .close:hover {
-    color: rgb(195, 25, 25);
+#top .controls span {
+    margin: 2px 0 0 2px;
+    display: block;
+    border-radius: 8px;
+    width: 8px;
+    height: 8px;
 }
-#top .min:hover {
-    color: rgb(195, 195, 25);
+#top .close span {
+    background:-webkit-linear-gradient(top, #FFD2D2 0%, rgb(200, 0, 0) 30%, rgb(200, 0, 0) 70%, #FFD2D2 100%);
 }
-#top .max:hover {
-    color: rgb(25, 195, 25);
+#top .min span {
+    background:-webkit-linear-gradient(top, #D2FFD2 0%, orange 30%, orange 70%, #D2FFD2 100%);
+}
+#top .max span {
+    background:-webkit-linear-gradient(top, #D2FFD2 0%, rgb(0, 200, 0) 30%, rgb(0, 200, 0) 70%, #D2FFD2 100%);
 }
 #top .menu {
     float: right;
