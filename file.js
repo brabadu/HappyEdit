@@ -117,7 +117,7 @@ function LocalFile(fileEntry, body) {
 
     this.save = function() {
         document.querySelector('#notification').style.visibility = 'visible';
-        chrome.fileSystem.getWritableFileEntry(self.fileEntry, function(fileEntry) {
+        chrome.fileSystem.getWritableEntry(self.fileEntry, function(fileEntry) {
             fileEntry.createWriter(function(fileWriter) {
                 fileWriter.onwriteend = function(e) {
                     document.querySelector('#notification').style.visibility = 'hidden';

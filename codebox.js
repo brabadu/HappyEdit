@@ -210,7 +210,7 @@ function openRemoteFile(filename) {
 }
 
 function openLocalFile() {
-    chrome.fileSystem.chooseFile(function(fileEntry) {
+    chrome.fileSystem.chooseEntry(function(fileEntry) {
         if (chrome.runtime.lastError) {
             console.log(chrome.runtime.lastError.message);
             return;

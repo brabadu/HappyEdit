@@ -14,8 +14,7 @@
         "app.window",
         "clipboardRead",
         "clipboardWrite",
-        "fileSystem",
-        "fileSystemWrite"
+        {"fileSystem": ["write"]}
     ],
     "icons": {
         "16": "logo_16x16.png",
