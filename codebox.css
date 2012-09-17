@@ -1,3 +1,4 @@
+h2,
 ul {
     margin: 0;
     padding: 0;
@@ -28,7 +29,7 @@ body {
     border-color: solid rgb(163, 26, 20);
     border: 1px;
 }
-#blocker {
+.blocker {
     z-index: 99;
     display: none;
     position: fixed;
@@ -53,6 +54,16 @@ body {
     border-radius: 4px;
     background: white;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    background: rgb(240, 240, 240);
+}
+.popup input {
+    outline: none;
+    border: 0;
+    background: rgb(220, 220, 220);
+    padding: 5px;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
 }
 .popup .close {
     position: absolute;
@@ -67,18 +78,10 @@ body {
     max-height: 70%;
     overflow-y: auto;
     overflow-x: hidden;
-    background: rgb(240, 240, 240);
 }
 .command-line input {
     width: 100%;
     font-size: 22px;
-    outline: none;
-    border: 0;
-    padding: 5px;
-    background: rgb(220, 220, 220);
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
 }
 .command-line ul {
     margin: 10px 0 0 0;

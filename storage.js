@@ -5,7 +5,6 @@ var Storage = {
     get: function(key, defaultValue, callback) {
         if (chrome && chrome.storage && chrome.storage.local) {
             return chrome.storage.local.get(key, function(items) {
-                console.log(items);
                 if (items.hasOwnProperty(key)) {
                     callback(items[key]);
                 } else {

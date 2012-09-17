@@ -57,7 +57,7 @@ var CommandLine = {
         self.$popup = document.querySelector('.popup.command-line');
         self.$input = document.querySelector('.popup.command-line input');
         self.$suggestions= document.querySelector('.popup.command-line ul');
-        self.$blocker = document.querySelector('#blocker');
+        self.$blocker = document.querySelector('.blocker.command-line');
 
         self.$input.onkeydown = function(event) {
             keyCode = event.keyCode;
