@@ -138,11 +138,10 @@ body {
     background: #eee;
 }
 #top .tabs .selected {
-    background: white;
+    background: -webkit-linear-gradient(top, #eee 0%, #fff 50%);
     position: relative;
     border-bottom: 0;
     padding-bottom: 1px;
-    box-shadow: none;
     -webkit-transition: none;
 }
 #top .tabs li.selected:hover {
