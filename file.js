@@ -66,6 +66,10 @@ function AbstractFile(name, body) {
     this.dirname = '';
     this.displayPath = '';
 
+    if (this.session.getMode().name === 'text') {
+        this.session.setUseWrapMode(true);
+    }
+
     this.session.getDocument().on('change', function(event) {
         self.modified = self.session.getUndoManager().$undoStack.length !== 0;
     });
