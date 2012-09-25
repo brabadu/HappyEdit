@@ -114,20 +114,6 @@ class SaveHandler():
             return [msg]
         return self.next_handler(environ, start_response)
 
-class CodeBoxFilesServer(Directory):
-
-    def __init__(self, path):
-        self.next_handler = None
-        Directory.__init__(self, path)
-
-    def __call__(self, environ, start_response):
-        if environ['PATH_INFO'] == '/':
-            environ['PATH_INFO'] = '/index.html'
-        return Directory.__call__(self, environ, start_response)
-
-    def notfound(self, part, environ, start_response):
-        return self.next_handler(environ, start_response)
-
 class GrepHandler():
 
     def __init__(self, path):
@@ -199,11 +185,10 @@ class NotFoundHandler:
         return [msg]
 
 def main():
-    codebox_path = os.path.dirname(os.path.abspath(sys.argv[0]))
+    path = os.path.dirname(os.path.abspath(sys.argv[0]))
     cwd = os.getcwd()
 
     handlers = []
-    handlers.append(CodeBoxFilesServer(codebox_path))
     handlers.append(GrepHandler(cwd))
     handlers.append(ProjectInfoHandler(cwd))
     handlers.append(FileListing(cwd))
