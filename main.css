@@ -143,7 +143,7 @@ body {
     background: #eee;
 }
 #top .tabs .selected {
-    background: -webkit-linear-gradient(top, #eee 0%, #fff 50%);
+    background: white;
     position: relative;
     border-bottom: 0;
     padding-bottom: 1px;
