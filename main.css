@@ -92,7 +92,12 @@ body {
 }
 .command-line li:hover,
 .command-line li.hover {
-    background: rgb(220, 220, 220);
+    background: rgb(65, 21, 252);
+    color: white;
+}
+.command-line li:hover .extra,
+.command-line li.hover .extra {
+    color: #ddd;
 }
 .command-line li .title {
     display: block;
