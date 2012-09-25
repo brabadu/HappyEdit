@@ -147,12 +147,6 @@ window.onload = function() {
             CommandLine.show("?");
         }
     };
-
-    Storage.get('previouslyOpenedFile', null, function(previouslyOpenedFile) {
-        if (previouslyOpenedFile) {
-            openRemoteFile(previouslyOpenedFile);
-        }
-    });
 };
 
 function switchToFile(file, updateTabs) {
@@ -203,9 +197,6 @@ function openRemoteFile(filename) {
 
     getOrLoadRemoteFile(filename, function(file) {
         window.switchToFile(file);
-        Storage.set('previouslyOpenedFile', filename, function() {
-            console.log('filename (hopefully) set in storage');
-        });
     });
 }
 
