@@ -222,10 +222,9 @@ def main():
 
     try:
         print "Serving " + cwd + " to http://localhost:8888"
-        make_server('0.0.0.0', 8888, handlers[0]).serve_forever()
+        make_server('localhost', 8888, handlers[0]).serve_forever()
     except KeyboardInterrupt, ki:
-        print ""
-        print "Bye bye"
+        print "\nBye bye"
 
 if __name__ == '__main__':
     main()
