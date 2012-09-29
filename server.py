@@ -123,9 +123,27 @@ class GrepHandler():
     def __call__(self, environ, start_response):
         if environ['PATH_INFO'] == '/grep':
             params = dict(parse_qsl(environ['QUERY_STRING']))
-            q = unquote(params['q'])
+            # Get the GET parameter q
+            try:
+                q = unquote(params['q'])
+            # Else tell the user we need it and return
+            except KeyError:
+                ret = 'The GET parameter q is required for /grep'
+                start_response("501 Not Implemented", [
+                    ('Content-Type', 'text/plain'),
+                    ('Content-Length', str(len(ret))),
+                ])
+                return [ret] 
 
-            files = subprocess.check_output(['grep', '-inr', q, '.'])
+            try:
+                files = subprocess.check_output(['grep', '-inr', q, '.'])
+            except subprocess.CalledProcessError, cpe:
+                # Make sure it looks like nothign was returned
+                if cpe.output != "" or cpe.returncode != 1:
+                    # if it doesn't look expected, raise
+                    raise cpe
+                # Else it looks like nothing was returned
+                files = ""
 
             ret = []
             for line in files.split('\n'):
@@ -204,10 +222,9 @@ def main():
 
     try:
         print "Serving " + cwd + " to http://localhost:8888"
-        make_server('0.0.0.0', 8888, handlers[0]).serve_forever()
+        make_server('localhost', 8888, handlers[0]).serve_forever()
     except KeyboardInterrupt, ki:
-        print ""
-        print "Bye bye"
+        print "\nBye bye"
 
 if __name__ == '__main__':
     main()
