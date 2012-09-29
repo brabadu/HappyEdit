@@ -101,7 +101,16 @@ class SaveHandler():
 
     def __call__(self, environ, start_response):
         if environ['REQUEST_METHOD'] == 'POST' and environ['PATH_INFO'].startswith('/files'):
-            filename = os.path.join(environ['PATH_INFO'][7:])
+            filename = self.path + os.path.sep + os.path.join(environ['PATH_INFO'][7:])
+            # The file must be under the cwd
+            if self.path not in  os.path.realpath(filename):
+                msg = 'Forbidden'
+                start_response("403 Forbidden", [
+                    ('Access-Control-Allow-Origin', '*'),
+                    ('Content-Type', 'text/plain'),
+                    ('Content-Length', str(len(msg))),
+                ])
+                return [msg]
             length = int(environ['CONTENT_LENGTH'])
             params = dict(parse_qsl(environ['wsgi.input'].read(length)))
             open(filename, 'w').write(params['body'])
