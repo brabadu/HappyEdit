@@ -183,9 +183,17 @@ body {
 }
 #top .menu {
     float: right;
-    cursor: pointer;
-    vertical-align: bottom;
-    margin-top: 3px;
+    padding: 5px;
+    border: 1px solid transparent;
+}
+#top .menu:hover {
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    background:-webkit-linear-gradient(top, #EEE 0%, #CCC 100%);
+}
+#top .menu:active {
+    background: #ccc;
+    box-shadow: inset 0 0 3px #666;
 }
 #top .menu span {
     display: block;
