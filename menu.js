@@ -1,10 +1,12 @@
 var Menu = {
+    $topButton: null,
     $popup: null,
     $blocker: null,
     
     init: function() {
         var self = this;
         
+        self.$topButton = document.querySelector('#top .menu');
         self.$popup = document.querySelector('.popup.menu');
         self.$blocker = document.querySelector('.blocker.menu');
 
@@ -42,6 +44,7 @@ var Menu = {
 
     show: function() {
         var self = this;
+        addClass(self.$topButton, 'active');
 
         self.$blocker.onclick = function() {
             self.hide();
@@ -61,5 +64,7 @@ var Menu = {
         self.$popup.style.display = 'none';
         self.$blocker.style.display = 'none';
         editor.focus();
+
+        removeClass(self.$topButton, 'active');
     }
 };
