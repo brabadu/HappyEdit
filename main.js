@@ -24,6 +24,7 @@ window.onload = function() {
 
     CommandLine.init();
     Settings.init();
+    Menu.init();
     TopBar.init();
     ProjectFiles.init();
 

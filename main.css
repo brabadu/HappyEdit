@@ -91,6 +91,7 @@ body {
     font-size: 16px;
 }
 .command-line li:hover,
+.menu li:hover,
 .command-line li.hover {
     background: rgb(93, 52, 249);
     color: white;
@@ -204,4 +205,20 @@ body {
 }
 #top .menu span:last-child {
     margin-bottom: 0;
+}
+.popup.menu {
+    position: absolute;
+    display: block;
+    width: auto;
+    top: 40px;
+    right: 5px;
+    margin: 0;
+    padding: 0;
+}
+.popup.menu li {
+    font-size: 14px;
+    padding: 7px;
+}
+.popup.menu li .shortcut {
+    float: right;
 }

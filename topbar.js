@@ -59,7 +59,7 @@ var TopBar = {
         self.$tabs = self.$view.querySelector('.tabs');
 
         self.$menuButton.onclick = function() {
-            Settings.show();
+            Menu.show();
         };
 
         self.$closeButton.onclick = function() {

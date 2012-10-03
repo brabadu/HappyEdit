@@ -18,6 +18,7 @@
         <script src="/autosuggest.js" type="text/javascript" charset="utf-8"></script>
         <script src="/commandline.js" type="text/javascript" charset="utf-8"></script>
         <script src="/settings.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/menu.js" type="text/javascript" charset="utf-8"></script>
         <script src="/topbar.js" type="text/javascript" charset="utf-8"></script>
         <script src="/projectfiles.js" type="text/javascript" charset="utf-8"></script>
         <script src="/file.js" type="text/javascript" charset="utf-8"></script>
@@ -29,11 +30,28 @@
         </div>
         <div class="blocker settings">
         </div>
+        <div class="blocker menu">
+        </div>
         <div class="popup command-line" style="display:none">
             <div>
                 <input type="text" class="cmd" />
                 <ul class="suggestions filelist"></ul>
             </div>
+        </div>
+        <div class="menu popup" style="display: none">
+            <ul>
+                <li rel="open-local-file">
+                    <span class="title">Open local file</span>
+                    <span class="shortcut">Cmd+O</span>
+                </li>
+                <li rel="open-remote-file">
+                    <span class="title">Open remote file</span>
+                    <span class="shortcut">Cmd+T</span>
+                </li>
+                <li rel="settings">
+                    <span class="title">Settings</span>
+                </li>
+            </ul>
         </div>
         <div class="popup settings" style="display:none">
             <span class="close">X</span>
