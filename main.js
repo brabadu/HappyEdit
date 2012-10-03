@@ -2,7 +2,6 @@ var files = {};
 var editor;
 var editorElement;
 var currentFile;
-var HOST = 'http://localhost:8888';
 
 window.onkeydown = function(event) {
     if (!CommandLine.isVisible() && !Settings.isVisible()) {
@@ -187,7 +186,7 @@ function getOrLoadRemoteFile(filename, callback) {
     }
 
     var xhr = new XMLHttpRequest();
-    var url = HOST + '/files/' + filename;
+    var url = ProjectFiles.host + '/files/' + filename;
     xhr.open("GET", url);
     xhr.onreadystatechange = function() {
         var file;

@@ -210,7 +210,9 @@ var CommandLine = {
     },
 
     getAutoCompleteSuggestions: function(s) {
-        this.fillSuggestionsList(ProjectFiles.getSuggestions(s));
+        if (ProjectFiles.isConnected()) {
+            this.fillSuggestionsList(ProjectFiles.getSuggestions(s));
+        }
     },
 
     grep: function(q) {

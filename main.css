@@ -72,7 +72,7 @@ body {
 }
 .popup label {
     display: block;
-    margin: 10px 0;
+    margin: 10px 0 5px 0;
 }
 .command-line {
     max-height: 70%;
@@ -92,6 +92,7 @@ body {
 }
 .command-line li:hover,
 .menu li:hover,
+.popup.settings input[type=submit],
 .command-line li.hover {
     background: rgb(93, 52, 249);
     color: white;
@@ -215,10 +216,20 @@ body {
     margin: 0;
     padding: 0;
 }
+.popup.settings .action {
+    display: block;
+}
+.popup.settings input[type=submit] {
+    float: right;
+}
 .popup.menu li {
     font-size: 12px;
     padding: 6px;
 }
 .popup.menu li .shortcut {
     float: right;
+}
+.popup.settings input[type=submit]:active {
+    background: rgb(73, 32, 229);
+    box-shadow: inset 0 0 5px black;
 }

@@ -3,12 +3,23 @@
  */
 var ProjectFiles = {
     autoSuggestList: null,
+    host: null,
     
     init: function() {
         var self = this;
+        Storage.get('settings', {}, function(data) {
+            if (data.remoteServer) {
+                self.load(data.remoteServer);
+            }
+        });
+    },
+    
+    load: function(host) {
+        var self = this;
         var xhr = new XMLHttpRequest();
-        var url = HOST + '/files';
-        
+        var url = host + '/files';
+
+        self.host = host;
         self.autoSuggestList = new AutoSuggestableFileList();
     
         /*if (ignoredExtensions) {
@@ -28,12 +39,17 @@ var ProjectFiles = {
     
         xhr.send();
     },
+
+    isConnected: function() {
+        return Boolean(this.host);
+    },
     
     /**
      * Gets a list of auto completions in the format expected by the
      * CommandLine
      */
     getSuggestions: function(q) {
+        var self = this;
         var suggestions = [];
         var i;
         var autoCompletions = this.autoSuggestList.getSuggestions(q);
@@ -43,7 +59,7 @@ var ProjectFiles = {
             var split = autoCompletion.split(PATH_SEPARATOR);
             suggestions.push({
                 title: split.pop(),
-                extra: capFileName(autoCompletion, 60 - HOST.length) + ' @ ' + HOST,
+                extra: capFileName(autoCompletion, 60 - self.host.length) + ' @ ' + self.host,
                 rel: autoCompletion,
                 onclick: CommandLine.fileSuggestionClickCallback
             });

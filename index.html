@@ -46,9 +46,15 @@
             <span class="close">X</span>
             <h2>Settings</h2>
 
-            <label>Ignore these extensions (separate with ',')</label>
+            <label>Ignore these extensions (separate with ','):</label>
             <input type="text" class="ignored_extensions" placeholder=".pyc,.scss" />
-            <input type="submit" class="send" value="Save" />
+
+            <label>Remote server:</label>
+            <input type="text" class="remote" placeholder="http://localhost:8888" />
+
+            <div class="actions">
+                <input type="submit" class="send" value="Save" />
+            </div>
         </div>
         <span id="notification">Saving</span>
 

@@ -15,19 +15,38 @@ var Settings = {
         });
     
         self.$saveButton.addEventListener('click', function(event) {
-            var value = self.$popup.querySelector('input.ignored_extensions').value;
-            var ignoredExtensions = [];
-            value.split(',').forEach(function(ext, i) {
-                if (ext.length) {
-                    if (ext[0] !== '.') {
-                        ext = '.' + ext;
-                    }
-                    ignoredExtensions.push(ext)
-                }
-            });
-            Storage.set('ignored_extensions', ignoredExtensions);
-            self.hide();
+            self.save();
         });
+    },
+
+    save: function() {
+        var self = this;
+        var settings = {
+            ignoredExtensions: [],
+            remoteServer: null,
+        };
+
+        var value = self.$popup.querySelector('input.ignored_extensions').value;
+        var ignoredExtensions = [];
+        value.split(',').forEach(function(ext, i) {
+            if (ext.length) {
+                if (ext[0] !== '.') {
+                    ext = '.' + ext;
+                }
+                ignoredExtensions.push(ext)
+            }
+        });
+
+        settings.ignoredExtensions = ignoredExtensions;
+        settings.remoteServer = self.$popup.querySelector('input.remote').value;
+
+        if (settings.remoteServer) {
+            ProjectFiles.load(settings.remoteServer);
+        }
+
+        Storage.set('settings', settings);
+
+        self.hide();
     },
 
     isVisible: function() {
@@ -44,9 +63,12 @@ var Settings = {
         self.$popup.style.display = 'block';
         self.$blocker.style.display = 'block';
 
-        Storage.get('ignored_extensions', false, function(data) {
-            if (data) {
-                self.$popup.querySelector('input.ignored_extensions').value = data.join(',');
+        Storage.get('settings', {}, function(data) {
+            if (data.ignoredExtensions) {
+                self.$popup.querySelector('input.ignored_extensions').value = data.ignoredExtensions.join(',');
+            }
+            if (data.remoteServer) {
+                self.$popup.querySelector('input.remote').value = data.remoteServer;
             }
         });
 
