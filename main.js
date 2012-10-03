@@ -18,6 +18,72 @@ function updateSize() {
     editorElement.style.height = h + 'px';
 }
 
+COMMANDS = [
+    {
+        name: "openFile",
+        title: "Open Local File",
+        shortcut: {
+            win: "Ctrl-O",
+            mac: "Command-O",
+        },
+        callback: function() {
+            openLocalFile();
+        }
+    },
+    {
+        name: "commandT",
+        title: "Open Remote File",
+        shortcut: {
+            win: "Ctrl-T",
+            mac: "Command-T",
+        },
+        callback: function() {
+            CommandLine.show('');
+        }
+    },
+    {
+        name: "save",
+        title: "Save",
+        shortcut: {
+            win: "Ctrl-S",
+            mac: "Command-S",
+        },
+        callback: function() {
+            window.currentFile.save();
+        }
+    },
+    {
+        name: "nextTab",
+        shortcut: {
+            win: "Ctrl-Tab",
+            mac: "Command-Shift-]",
+        },
+        callback: function() {
+            TopBar.nextTab();
+        }
+    },
+    {
+        name: "prevTab",
+        shortcut: {
+            win: "Ctrl-Shift-Tab",
+            mac: "Command-Shift-[",
+        },
+        callback: function() {
+            TopBar.prevTab();
+        }
+    },
+    {
+        name: "closeFile",
+        shortcut: {
+            win: "Ctrl-W",
+            mac: "Command-W",
+        },
+        callback: function() {
+            closeFile(window.currentFile);
+        }
+    }
+];
+
 window.onload = function() {
     editor = ace.edit("editor");
     editorElement = document.getElementById('editor');
@@ -37,77 +103,18 @@ window.onload = function() {
     editor.setKeyboardHandler(require("ace/keyboard/vim").handler);
     editor.setAnimatedScroll(true);
 
-    editor.commands.addCommand({
-        name: "save",
-        bindKey: {
-            win: "Ctrl-S",
-            mac: "Command-S",
-            sender: "editor"
-        },
-        exec: function() {
-            window.currentFile.save();
-        }
-    });
-
-    editor.commands.addCommand({
-        name: "commandT",
-        bindKey: {
-            win: "Ctrl-T",
-            mac: "Command-T",
-            sender: "editor"
-        },
-        exec: function() {
-            CommandLine.show('');
-        }
-    });
-
-    editor.commands.addCommand({
-        name: "nextTab",
-        bindKey: {
-            win: "Ctrl-Tab",
-            mac: "Command-Shift-]",
-            sender: "editor"
-        },
-        exec: function() {
-            TopBar.nextTab();
-        }
-    });
-
-    editor.commands.addCommand({
-        name: "prevTab",
-        bindKey: {
-            win: "Ctrl-Shift-Tab",
-            mac: "Command-Shift-[",
-            sender: "editor"
-        },
-        exec: function() {
-            TopBar.prevTab();
-        }
-    });
-
-    editor.commands.addCommand({
-        name: "openFile",
-        bindKey: {
-            win: "Ctrl-O",
-            mac: "Command-O",
-            sender: "editor"
-        },
-        exec: function() {
-            openLocalFile();
-        }
-    });
-
-    editor.commands.addCommand({
-        name: "closeFile",
-        bindKey: {
-            win: "Ctrl-W",
-            mac: "Command-W",
-            sender: "editor"
-        },
-        exec: function() {
-            closeFile(window.currentFile);
-        }
-    });
+    for (var i = 0; i < COMMANDS.length; i += 1) {
+        var command = COMMANDS[i];
+        editor.commands.addCommand({
+            name: command.name,
+            bindKey: {
+                win: command.shortcut.win,
+                mac: command.shortcut.mac,
+                sender: "editor"
+            },
+            exec: command.callback
+        });
+    }
 
     for (var i = 1; i < 10; i += 1) {
         (function() {

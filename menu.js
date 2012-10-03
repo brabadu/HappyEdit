@@ -7,6 +7,22 @@ var Menu = {
         
         self.$popup = document.querySelector('.popup.menu');
         self.$blocker = document.querySelector('.blocker.menu');
+
+        var $fragment = document.createDocumentFragment();
+        for (var i = 0; i < COMMANDS.length; i += 1) {
+            var command = COMMANDS[i];
+            if (!command.title) {
+                continue;
+            }
+            var $li = HTML.createMenuOption({
+                title: command.title,
+                className: command.name,
+                shortcut: command.shortcut.mac,
+                callback: command.callback
+            });
+            self.$popup.appendChild($li);
+        }
+        self.$popup.appendChild($fragment);
     },
 
     isVisible: function() {
@@ -35,4 +51,4 @@ var Menu = {
         self.$blocker.style.display = 'none';
         editor.focus();
     }
-};est
+};
