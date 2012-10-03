@@ -22,6 +22,17 @@ var Menu = {
             });
             self.$popup.appendChild($li);
         }
+
+        var $li = HTML.createMenuOption({
+            title: 'Settings',
+            className: 'settings',
+            callback: function() {
+                Settings.show();
+                Menu.hide();
+            }
+        });
+        self.$popup.appendChild($li);
+
         self.$popup.appendChild($fragment);
     },
 
