@@ -15,19 +15,34 @@
             background: -o-radial-gradient(center 400px, 100% 100%, #ccc, #000) no-repeat;
             background: radial-gradient(center 400px, 100% 100%, #ccc, #000) no-repeat;
         }
+        .action {
+            border: 2px solid #8FB74E;
+            border-radius: 4px;
+            font-size: 24px;
+            background: -webkit-linear-gradient(#BBEF66, #9FCB57);
+            text-shadow: 0 1px rgba(255, 255, 255, 0.4);
+            color: #475B27;
+            padding: 10px;
+            box-shadow: 0 0 0 4px rgba(143, 183, 78, 0.2),0 1px rgba(255, 255, 255, 0.3) inset,0 2px 2px -2px black;
+        }
+        .action:active {
+            background: #9FCB57;
+            box-shadow: inset 0 0 5px #666;
+        }
         * {
             color: black;
             text-decoration: none;
         }
         h1 {
             margin-top: 50px;
+            margin-bottom: 0px;
             font-size: 50px;
         }
         h2 {
             font-size: 20px;
         }
         iframe {
-            margin: 25px;
+            margin: 25px 0 50px 0;
         }
     </style>
     </head>
@@ -36,16 +51,7 @@
         <h2>The modern Vim-inspired text editor</h2>
         <iframe width="560" height="315" src="http://www.youtube.com/embed/AydXPhX7s-E" frameborder="0" allowfullscreen></iframe>
         <div class="flattr">
-            <script type="text/javascript">
-            /* <![CDATA[ */
-                (function() {
-                    var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
-                    s.type = 'text/javascript';
-                    s.async = true;
-                    s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
-                    t.parentNode.insertBefore(s, t);
-                })();
-            /* ]]> */</script>
+            <a class="indiegogo action" href="http://www.indiegogo.com/happyedit?a=1061258">Back This Project</a>
             <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;popout:0" href="http://happyedit.se"></a>
             <noscript><a href="http://flattr.com/thing/911486/HappyEdit" target="_blank">
             <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" /></a></noscript>
