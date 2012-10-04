@@ -9,8 +9,8 @@ This step requires Node.js and npm to be installed.
 
 ```
 $ cd HAPPYEDIT_CHECKOUT
-$ git submodules init
-$ git submodules update
+$ git submodule init
+$ git submodule update
 $ cd ace
 $ npm install
 $ node Makefile.dryice.js
