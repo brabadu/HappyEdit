@@ -32,6 +32,8 @@
         * {
             color: black;
             text-decoration: none;
+            margin: 0;
+            padding: 0;
         }
         h1 {
             margin-top: 50px;
@@ -40,15 +42,41 @@
         }
         h2 {
             font-size: 20px;
+            margin: 10px 0 25px 0;
         }
         iframe {
             margin: 25px 0 50px 0;
+        }
+        .sponsor-slot p {
+            color: #ccc;
+        }
+        .sponsor-slot {
+            display: inline-block;
+            padding: 20px;
+            border: 2px dashed white;
+            background: #666;
+            color: #ccc;
+            text-shadow: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .sponsor-slot .buy {
+            display: inline-block;
+            padding: 1px;
+            margin-top: 10px;
+            font-size: 11px;
         }
     </style>
     </head>
     <body>
         <h1>HappyEdit</h1>
         <h2>The modern Vim-inspired text editor</h2>
+        <div class="sponsors">
+            <div class="sponsor-slot">
+                <p>Your company logo here</p>
+                <a class="action buy" href="https://www.indiegogo.com/projects/242550/pledges/new?perk_amt=1000&perk_id=587902">$1,000</a>
+            </div>
+        </div>
         <iframe width="560" height="315" src="http://www.youtube.com/embed/AydXPhX7s-E" frameborder="0" allowfullscreen></iframe>
         <div class="flattr">
             <a class="indiegogo action" href="http://www.indiegogo.com/happyedit?a=1061258">Back This Project</a>
